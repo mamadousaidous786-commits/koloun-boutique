@@ -11,8 +11,10 @@ export function FournisseurBoutique({ children }) {
   const [mesCommandes, setMesCommandes] = useState(() => lire('kb_mes_commandes', []));
   const [client, setClient] = useState(() => lire('kb_client', { nom: '', telephone: '' }));
   const [vendeur, setVendeurEtat] = useState(() => lire('kb_vendeur', null));
-  // Enregistré tout de suite : les requêtes du vendeur lisent le jeton juste après la connexion
+  // Enregistré tout de suite : les requêtes lisent le jeton juste après la connexion
   const setVendeur = useCallback((v) => { ecrire('kb_vendeur', v); setVendeurEtat(v); }, []);
+  const [compte, setCompteEtat] = useState(() => lire('kb_compte', null)); // { token, compte }
+  const setCompte = useCallback((c) => { ecrire('kb_compte', c); setCompteEtat(c); }, []);
   const [toast, setToast] = useState(null);
   const minuteur = useRef();
 
@@ -24,9 +26,11 @@ export function FournisseurBoutique({ children }) {
 
   useEffect(() => {
     const f = () => setVendeur(null);
+    const g = () => setCompte(null);
     window.addEventListener('kb-deconnexion', f);
-    return () => window.removeEventListener('kb-deconnexion', f);
-  }, [setVendeur]);
+    window.addEventListener('kb-deconnexion-client', g);
+    return () => { window.removeEventListener('kb-deconnexion', f); window.removeEventListener('kb-deconnexion-client', g); };
+  }, [setVendeur, setCompte]);
 
   const notifier = useCallback((message, action) => {
     clearTimeout(minuteur.current);
@@ -64,9 +68,11 @@ export function FournisseurBoutique({ children }) {
     setClient,
     vendeur,
     setVendeur,
+    compte,
+    setCompte,
     toast,
     notifier,
-  }), [panier, ajouter, favoris, vus, mesCommandes, client, vendeur, toast, notifier, setVendeur]);
+  }), [panier, ajouter, favoris, vus, mesCommandes, client, vendeur, toast, notifier, setVendeur, compte, setCompte]);
 
   return <Contexte.Provider value={valeur}>{children}</Contexte.Provider>;
 }

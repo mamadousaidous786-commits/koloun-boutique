@@ -1,11 +1,12 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, Navigate } from 'react-router-dom';
 import { api } from '../api';
 import useCharger from '../useCharger';
 import { useBoutique } from '../store';
 import Img from '../components/Img';
 import { Erreur } from './Accueil';
-import { STATUTS, gnf } from '../utils';
+import { STATUTS, gnf, lienWhatsApp, numeroInternational } from '../utils';
+import { telephoneLisible } from './Compte';
 
 // Réduit une photo avant l'envoi (plus rapide sur les connexions mobiles)
 async function compresser(fichier, max = 1600) {
@@ -21,38 +22,6 @@ async function compresser(fichier, max = 1600) {
   } catch {
     return fichier; // format non lisible par le navigateur (ex. HEIC) : envoyé tel quel
   }
-}
-
-function Connexion() {
-  const { setVendeur } = useBoutique();
-  const [email, setEmail] = useState('');
-  const [mdp, setMdp] = useState('');
-  const [erreur, setErreur] = useState('');
-  const [envoi, setEnvoi] = useState(false);
-
-  const valider = async (e) => {
-    e.preventDefault();
-    setEnvoi(true); setErreur('');
-    try {
-      const r = await api.connexion(email.trim(), mdp);
-      setVendeur({ token: r.token, utilisateur: r.utilisateur });
-    } catch (err) {
-      setErreur(err.message);
-    } finally { setEnvoi(false); }
-  };
-
-  return (
-    <div className="page connexion">
-      <h1 className="titre-page">Espace vendeur</h1>
-      <p>Connectez-vous avec votre compte Koloun Gestion pour voir les commandes, accorder des prix et publier des paires en commande spéciale.</p>
-      <form className="formulaire" onSubmit={valider}>
-        <label><span>Email</span><input type="email" value={email} onChange={(e) => setEmail(e.target.value)} autoComplete="username" required /></label>
-        <label><span>Mot de passe</span><input type="password" value={mdp} onChange={(e) => setMdp(e.target.value)} autoComplete="current-password" required /></label>
-        {erreur && <p className="erreur" role="alert">{erreur}</p>}
-        <button type="submit" className="btn btn-sombre btn-large" disabled={envoi}>{envoi ? 'Connexion…' : 'Se connecter'}</button>
-      </form>
-    </div>
-  );
 }
 
 function Commandes() {
@@ -190,10 +159,99 @@ function Articles() {
   );
 }
 
+// Clients inscrits sur l'application (réservé à l'administrateur)
+function ClientsInscrits() {
+  const res = useCharger(() => api.clientsInscrits(), []);
+  const [q, setQ] = useState('');
+  const [ouvert, setOuvert] = useState(null);
+  const [commandes, setCommandes] = useState({});
+  const [provisoire, setProvisoire] = useState(null);
+  const [msg, setMsg] = useState('');
+
+  const liste = (res.donnees || []).filter((c) => {
+    const r = q.trim().toLowerCase();
+    return !r || `${c.nom} ${c.telephone || ''} ${c.email || ''}`.toLowerCase().includes(r.replace(/\s/g, '')) || c.nom.toLowerCase().includes(r);
+  });
+
+  const voirCommandes = async (c) => {
+    if (ouvert === c.id) return setOuvert(null);
+    setOuvert(c.id);
+    if (!commandes[c.id]) {
+      try { const l = await api.commandesDuClient(c.id); setCommandes((x) => ({ ...x, [c.id]: l })); } catch (e) { setMsg(e.message); }
+    }
+  };
+
+  const reinitialiser = async (c) => {
+    if (!window.confirm(`Créer un mot de passe provisoire pour ${c.nom} ?`)) return;
+    try { const r = await api.reinitialiserClient(c.id); setProvisoire({ client: c, mdp: r.mot_de_passe }); } catch (e) { setMsg(e.message); }
+  };
+
+  const basculer = async (c) => {
+    try { await api.reglerClient(c.id, { actif: !c.actif }); res.recharger(); } catch (e) { setMsg(e.message); }
+  };
+
+  const total = res.donnees?.length || 0;
+  const actifsMois = (res.donnees || []).filter((c) => c.derniere_connexion && Date.now() - new Date(c.derniere_connexion).getTime() < 30 * 864e5).length;
+
+  return (
+    <>
+      <div className="chiffres-clients">
+        <div><strong>{total}</strong><span>clients inscrits</span></div>
+        <div><strong>{actifsMois}</strong><span>connectés ce mois</span></div>
+        <div><strong>{(res.donnees || []).filter((c) => c.nb_commandes > 0).length}</strong><span>ont déjà commandé</span></div>
+      </div>
+      <div className="barre-recherche">
+        <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Chercher un nom, un numéro, un email" aria-label="Chercher un client" type="search" />
+      </div>
+      {msg && <p className="erreur" role="alert">{msg}</p>}
+      {provisoire && (
+        <div className="bandeau-ok" role="status">
+          <p>Mot de passe provisoire de <strong>{provisoire.client.nom}</strong> : <strong className="mdp-provisoire">{provisoire.mdp}</strong></p>
+          {provisoire.client.telephone && (
+            <a className="btn btn-wa" href={lienWhatsApp(`Bonjour ${provisoire.client.nom}, voici votre nouveau mot de passe pour l'application Koloun Luxure : ${provisoire.mdp}\nVous pourrez le changer dans « Mon compte ».`, numeroInternational(provisoire.client.telephone))} target="_blank" rel="noreferrer">Envoyer par WhatsApp</a>
+          )}
+          <button type="button" className="lien-discret" onClick={() => setProvisoire(null)}>Fermer</button>
+        </div>
+      )}
+      {res.chargement ? <p className="ligne-attente" /> : res.erreur ? <Erreur message={res.erreur} recharger={res.recharger} /> : liste.length ? (
+        <ul className="liste-clients">
+          {liste.map((c) => (
+            <li key={c.id} className={c.actif ? '' : 'retire'}>
+              <div className="lc-client">
+                <span className="avatar petit-avatar">{c.photo ? <img src={c.photo} alt="" referrerPolicy="no-referrer" /> : c.nom.slice(0, 1).toUpperCase()}</span>
+                <span className="lc-client-texte">
+                  <strong>{c.nom}{c.google && <em className="badge-google">Google</em>}{!c.actif && <em className="badge-off">désactivé</em>}</strong>
+                  <small>{[c.telephone && telephoneLisible(c.telephone), c.email].filter(Boolean).join(' · ')}</small>
+                  <small>Inscrit le {new Date(c.created_at).toLocaleDateString('fr-FR')} · {c.nb_commandes} commande{c.nb_commandes > 1 ? 's' : ''}{c.total_confirme ? ` · ${gnf(c.total_confirme)} confirmés` : ''}</small>
+                </span>
+              </div>
+              <div className="lc-actions">
+                {c.telephone && <a className="btn btn-wa petit-btn" href={lienWhatsApp(`Bonjour ${c.nom} 👋`, numeroInternational(c.telephone))} target="_blank" rel="noreferrer">WhatsApp</a>}
+                <button type="button" className="btn btn-contour petit-btn" onClick={() => voirCommandes(c)} aria-expanded={ouvert === c.id}>Commandes</button>
+                {c.avec_mdp && <button type="button" className="btn btn-contour petit-btn" onClick={() => reinitialiser(c)}>Mot de passe</button>}
+                <button type="button" className="btn btn-contour petit-btn" onClick={() => basculer(c)}>{c.actif ? 'Désactiver' : 'Réactiver'}</button>
+              </div>
+              {ouvert === c.id && (
+                <ul className="lc-commandes">
+                  {!commandes[c.id] ? <li className="petit">Chargement…</li> : commandes[c.id].length ? commandes[c.id].map((x) => (
+                    <li key={x.code}><Link to={`/c/${x.code}`}>{x.reference}</Link><span>{new Date(x.created_at).toLocaleDateString('fr-FR')}</span><span className={`statut statut-${x.statut}`}>{STATUTS[x.statut]?.libelle}</span><strong>{gnf(x.total_final)}</strong></li>
+                  )) : <li className="petit">Aucune commande pour le moment.</li>}
+                </ul>
+              )}
+            </li>
+          ))}
+        </ul>
+      ) : <p className="vide-texte">{total ? 'Aucun client ne correspond à la recherche.' : "Aucun client inscrit pour le moment. Partagez le lien de l'application !"}</p>}
+    </>
+  );
+}
+
 export default function Vendeur() {
   const { vendeur, setVendeur } = useBoutique();
   const [onglet, setOnglet] = useState('commandes');
-  if (!vendeur) return <Connexion />;
+  if (!vendeur) return <Navigate to="/compte" replace />;
+  const admin = vendeur.utilisateur?.role === 'admin';
+  const onglets = [['commandes', 'Commandes'], ['speciale', 'Spéciales'], ['articles', 'Articles'], ...(admin ? [['clients', 'Clients']] : [])];
 
   return (
     <div className="page page-vendeur">
@@ -202,13 +260,14 @@ export default function Vendeur() {
         <p className="petit">Connecté : {vendeur.utilisateur?.prenom} {vendeur.utilisateur?.nom} · <button type="button" className="lien-discret" onClick={() => setVendeur(null)}>Se déconnecter</button></p>
       </div>
       <div className="onglets" role="tablist">
-        {[['commandes', 'Commandes'], ['speciale', 'Spéciales'], ['articles', 'Articles']].map(([v, l]) => (
+        {onglets.map(([v, l]) => (
           <button key={v} type="button" role="tab" aria-selected={onglet === v} className={onglet === v ? 'actif' : ''} onClick={() => setOnglet(v)}>{l}</button>
         ))}
       </div>
       {onglet === 'commandes' && <Commandes />}
       {onglet === 'speciale' && <CatalogueSpecial />}
       {onglet === 'articles' && <Articles />}
+      {onglet === 'clients' && admin && <ClientsInscrits />}
     </div>
   );
 }

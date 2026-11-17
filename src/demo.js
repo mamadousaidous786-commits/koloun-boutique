@@ -150,3 +150,18 @@ export async function modifierSpeciale() { await pause(); return { message: 'Pai
 export async function retirerSpeciale(id) { await pause(); SPECIALES = SPECIALES.filter((s) => s.id !== id); return { message: "Paire retirée de l'application." }; }
 export async function produitsAdmin() { await pause(); return PRODUITS.map((p) => ({ id: p.id, nom: p.nom, prix: p.prix, categorie: p.categorie, visible: true, image: p.variantes[0].image })); }
 export async function reglerProduit(id, corps) { await pause(); const p = PRODUITS.find((x) => x.id === id); if (p && corps.categorie !== undefined) p.categorie = corps.categorie; return { message: 'Produit mis à jour.' }; }
+
+// Comptes (démonstration) : un email contenant « admin » ouvre l'espace vendeur
+export async function seConnecter(identifiant) {
+  await pause(300);
+  if (/admin/i.test(identifiant)) return { type: 'vendeur', token: 'demo', utilisateur: { nom: 'Sow', prenom: '', email: identifiant, role: 'admin' } };
+  return { type: 'client', token: 'demo-client', compte: { id: 1, nom: 'Client démo', telephone: '224620000000', email: null, google: false } };
+}
+export async function sInscrire(c) { await pause(300); return { type: 'client', token: 'demo-client', compte: { id: 1, nom: c.nom, telephone: /@/.test(c.contact) ? null : c.contact, email: /@/.test(c.contact) ? c.contact : null, google: false } }; }
+export async function connexionGoogle() { await pause(200); throw new Error('Connexion Google indisponible en démonstration.'); }
+export async function monCompte() { await pause(200); const c = lire('kb_compte', null)?.compte; return { compte: c, commandes: commandes().map((x) => ({ reference: x.reference, code: x.code, statut: x.statut, total: x.total_final, total_initial: x.total_initial, date: x.created_at, nb: x.lignes.length, image: x.lignes[0]?.image })) }; }
+export async function modifierCompte(corps) { await pause(200); return { compte: { ...lire('kb_compte', null)?.compte, nom: corps.nom } }; }
+export async function clientsInscrits() { await pause(200); return [{ id: 1, nom: 'Mariama Bah', telephone: '224621112233', email: null, actif: true, google: false, avec_mdp: true, created_at: new Date().toISOString(), derniere_connexion: new Date().toISOString(), nb_commandes: 2, total_confirme: 930000 }, { id: 2, nom: 'Ibrahima Sow', telephone: null, email: 'ibra@mail.com', actif: true, google: true, avec_mdp: false, created_at: new Date().toISOString(), derniere_connexion: null, nb_commandes: 0, total_confirme: 0 }]; }
+export async function commandesDuClient() { await pause(200); return []; }
+export async function reglerClient() { await pause(200); return {}; }
+export async function reinitialiserClient() { await pause(200); return { mot_de_passe: 'KL123456' }; }

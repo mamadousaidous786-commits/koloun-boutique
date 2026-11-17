@@ -577,6 +577,53 @@ main { min-height: 70vh; }
   .encart-appli .btn { grid-column: auto; }
 }
 
+
+/* ---------- Comptes ---------- */
+.intro-compte { color: var(--doux); margin: -4px 0 18px; max-width: 46ch; }
+.formulaire .champ { display: grid; gap: 6px; font-weight: 600; font-size: 14px; }
+.champ-mdp { position: relative; display: block; }
+.champ-mdp input { padding-right: 92px !important; }
+.champ-mdp button { position: absolute; right: 6px; top: 50%; transform: translateY(-50%); height: 38px; padding: 0 12px; border-radius: 9px; font-size: 13px; font-weight: 700; color: var(--doux); }
+.formulaire small.erreur { font-size: 12.5px; }
+.formulaire input[aria-invalid='true'] { border-color: var(--alerte); }
+.separateur { display: flex; align-items: center; gap: 12px; margin: 20px 0 14px; color: var(--doux); font-size: 13px; }
+.separateur::before, .separateur::after { content: ''; flex: 1; height: 1px; background: var(--ligne); }
+.zone-google { display: flex; justify-content: center; min-height: 44px; }
+.connexion .centre a { text-decoration: underline; font-weight: 600; color: var(--texte); }
+.point-connecte { position: absolute; right: 8px; bottom: 8px; width: 9px; height: 9px; border-radius: 50%; background: var(--wa); box-shadow: 0 0 0 2px var(--blanc); }
+.tete-compte { display: flex; align-items: center; gap: 14px; margin-bottom: 16px; }
+.tete-compte .titre-page { margin-bottom: 2px; }
+.avatar { width: 56px; height: 56px; border-radius: 50%; flex: none; display: grid; place-items: center; overflow: hidden; background: var(--noir); color: var(--or-clair); font-family: var(--serif); font-size: 26px; font-weight: 700; }
+.avatar img { width: 100%; height: 100%; object-fit: cover; }
+.petit-avatar { width: 44px; height: 44px; font-size: 20px; }
+.actions-compte { display: flex; flex-wrap: wrap; gap: 10px; }
+.vide-compte { display: grid; justify-items: start; gap: 12px; color: var(--doux); }
+.chiffres-clients { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 14px; }
+.chiffres-clients div { background: var(--blanc); border: 1px solid var(--ligne); border-radius: 14px; padding: 12px; display: grid; }
+.chiffres-clients strong { font-size: 22px; }
+.chiffres-clients span { font-size: 12px; color: var(--doux); }
+.liste-clients { list-style: none; padding: 0; margin: 0; display: grid; gap: 10px; }
+.liste-clients > li { background: var(--blanc); border: 1px solid var(--ligne); border-radius: 14px; padding: 12px; display: grid; gap: 10px; }
+.liste-clients > li.retire { opacity: .55; }
+.lc-client { display: flex; gap: 12px; align-items: center; min-width: 0; }
+.lc-client-texte { display: grid; min-width: 0; }
+.lc-client-texte strong { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.lc-client-texte small { color: var(--doux); font-size: 12.5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.badge-google, .badge-off { font-style: normal; font-size: 11px; font-weight: 700; padding: 2px 7px; border-radius: 5px; background: #e8f0fe; color: #1a56c4; }
+.badge-off { background: #f8e3e1; color: var(--alerte); }
+.lc-actions { display: flex; flex-wrap: wrap; gap: 6px; }
+.lc-commandes { list-style: none; margin: 0; padding: 10px 0 0; border-top: 1px solid var(--ligne); display: grid; gap: 8px; }
+.lc-commandes li { display: grid; grid-template-columns: 1fr auto; gap: 2px 10px; font-size: 13.5px; align-items: center; }
+.lc-commandes a { font-weight: 700; text-decoration: underline; }
+.lc-commandes .statut { justify-self: start; }
+.mdp-provisoire { font-size: 18px; letter-spacing: .06em; }
+.onglets button { white-space: nowrap; padding: 0 6px; }
+@media (min-width: 640px) {
+  .liste-clients > li { grid-template-columns: 1fr auto; align-items: center; }
+  .lc-commandes { grid-column: 1 / -1; }
+  .lc-commandes li { grid-template-columns: 1fr auto auto auto; }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; scroll-behavior: auto !important; }
   .poster { transform: translateX(calc(var(--d) * 70%)) scale(calc(1 - var(--abs) * .12)); }

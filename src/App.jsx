@@ -15,6 +15,7 @@ import Commande from './pages/Commande';
 import Favoris from './pages/Favoris';
 import Vendeur from './pages/Vendeur';
 import Boutique from './pages/Boutique';
+import Compte from './pages/Compte';
 
 const Routeur = ROUTEUR_HASH ? HashRouter : BrowserRouter;
 
@@ -36,6 +37,7 @@ function Toast() {
 }
 
 function PiedPage() {
+  const { compte, vendeur } = useBoutique();
   return (
     <footer className="pied">
       <div className="pied-int">
@@ -44,7 +46,7 @@ function PiedPage() {
         <p className="pied-liens">
           <Link to="/mes-commandes">Mes commandes</Link>
           <Link to="/boutique">Nous trouver</Link>
-          <Link to="/vendeur">Espace vendeur</Link>
+          {vendeur ? <Link to="/vendeur">Espace vendeur</Link> : compte ? <Link to="/compte">Mon compte</Link> : <Link to="/compte">Connexion / Inscription</Link>}
         </p>
         <div className="pied-appli"><BoutonTelecharger className="btn btn-contour-clair" /></div>
       </div>
@@ -71,6 +73,7 @@ export default function App() {
             <Route path="/mes-commandes" element={<Favoris onglet="commandes" />} />
             <Route path="/boutique" element={<Boutique />} />
             <Route path="/vendeur" element={<Vendeur />} />
+            <Route path="/compte" element={<Compte />} />
             <Route path="*" element={<div className="page vide"><h1>Page introuvable</h1><Link className="btn btn-sombre" to="/">Retour à l'accueil</Link></div>} />
           </Routes>
         </main>

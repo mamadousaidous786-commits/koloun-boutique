@@ -8,10 +8,12 @@ import { IcoFermer, IcoWhatsApp } from './Icones';
 // Dernière étape : nom + téléphone, puis la commande part sur WhatsApp avec son lien.
 // lignes = [{ cle, source, produit_taille_id | special_id, taille, quantite, nom, prix, image }]
 export default function FeuilleCommande({ ouverte, onFermer, lignes, intentionInitiale = 'valider', onEnvoye }) {
-  const { client, setClient, viderLignes, memoriserCommande } = useBoutique();
+  const { client, setClient, viderLignes, memoriserCommande, compte } = useBoutique();
   const naviguer = useNavigate();
-  const [nom, setNom] = useState(client.nom);
-  const [tel, setTel] = useState(client.telephone);
+  // Client connecté : son nom et son numéro sont déjà remplis
+  const telCompte = compte?.compte?.telephone ? String(compte.compte.telephone).replace(/^224(?=\d{9}$)/, '') : '';
+  const [nom, setNom] = useState(client.nom || compte?.compte?.nom || '');
+  const [tel, setTel] = useState(client.telephone || telCompte);
   const [note, setNote] = useState('');
   const [envoi, setEnvoi] = useState(null);
   const [erreur, setErreur] = useState('');

@@ -4,7 +4,7 @@ import { lire } from './utils';
 let demoModule = null;
 const demo = async () => (demoModule ||= await import('./demo.js'));
 
-async function requete(chemin, { methode = 'GET', corps, token, formulaire } = {}) {
+async function requete(chemin, { methode = 'GET', corps, token, formulaire, client = false } = {}) {
   const entetes = {};
   if (token) entetes.Authorization = `Bearer ${token}`;
   if (corps && !formulaire) entetes['Content-Type'] = 'application/json';
@@ -20,9 +20,13 @@ async function requete(chemin, { methode = 'GET', corps, token, formulaire } = {
   }
   const donnees = await reponse.json().catch(() => ({}));
   if (!reponse.ok) {
-    if (token && (reponse.status === 401 || reponse.status === 403)) {
+    if (token && client && reponse.status === 401) {
+      window.dispatchEvent(new Event('kb-deconnexion-client')); // session client expirée
+      throw new Error('Votre session a expiré. Reconnectez-vous.');
+    }
+    if (token && !client && (reponse.status === 401 || reponse.status === 403)) {
       window.dispatchEvent(new Event('kb-deconnexion')); // session vendeur expirée
-      throw new Error('Votre session a expiré. Reconnectez-vous dans l\'espace vendeur.');
+      throw new Error('Votre session a expiré. Reconnectez-vous.');
     }
     const err = new Error(donnees.message || `Erreur ${reponse.status}`);
     err.statut = reponse.status;
@@ -32,6 +36,7 @@ async function requete(chemin, { methode = 'GET', corps, token, formulaire } = {
 }
 
 const jeton = () => lire('kb_vendeur', null)?.token;
+const jetonClient = () => lire('kb_compte', null)?.token;
 
 // Chaque fonction bascule sur les données de démonstration si VITE_DEMO=1
 const appel = (nom, reel) => async (...args) => (DEMO ? (await demo())[nom](...args) : reel(...args));
@@ -47,8 +52,20 @@ export const api = {
   nouveautes: appel('nouveautes', () => requete('/boutique/nouveautes')),
   produit: appel('produit', (id) => requete(`/boutique/produits/${id}`)),
   speciales: appel('speciales', () => requete('/boutique/speciales')),
-  creerCommande: appel('creerCommande', (corps) => requete('/boutique/commandes', { methode: 'POST', corps })),
+  // La commande est rattachée au compte du client s'il est connecté
+  creerCommande: appel('creerCommande', (corps) => requete('/boutique/commandes', { methode: 'POST', corps, token: jetonClient(), client: true })),
   voirCommande: appel('voirCommande', (code) => requete(`/boutique/commandes/${code}`)),
+
+  // Comptes : une seule connexion (un compte Koloun Gestion ouvre l'espace vendeur)
+  seConnecter: appel('seConnecter', (identifiant, mot_de_passe) => requete('/boutique/auth/connexion', { methode: 'POST', corps: { identifiant, mot_de_passe } })),
+  sInscrire: appel('sInscrire', (corps) => requete('/boutique/auth/inscription', { methode: 'POST', corps })),
+  connexionGoogle: appel('connexionGoogle', (credential) => requete('/boutique/auth/google', { methode: 'POST', corps: { credential } })),
+  monCompte: appel('monCompte', () => requete('/boutique/compte', { token: jetonClient(), client: true })),
+  modifierCompte: appel('modifierCompte', (corps) => requete('/boutique/compte', { methode: 'PUT', corps, token: jetonClient(), client: true })),
+  clientsInscrits: appel('clientsInscrits', () => requete('/boutique/admin/clients', { token: jeton() })),
+  commandesDuClient: appel('commandesDuClient', (id) => requete(`/boutique/admin/clients/${id}/commandes`, { token: jeton() })),
+  reglerClient: appel('reglerClient', (id, corps) => requete(`/boutique/admin/clients/${id}`, { methode: 'PATCH', corps, token: jeton() })),
+  reinitialiserClient: appel('reinitialiserClient', (id) => requete(`/boutique/admin/clients/${id}/reinitialiser`, { methode: 'POST', token: jeton() })),
 
   // Espace vendeur (identifiants Koloun Gestion)
   connexion: appel('connexion', (email, mot_de_passe) => requete('/auth/login', { methode: 'POST', corps: { email, mot_de_passe } })),

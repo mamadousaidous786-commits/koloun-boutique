@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react';
 import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { useBoutique } from '../store';
-import { IcoCoeur, IcoPanier, IcoRecherche } from './Icones';
+import { IcoCoeur, IcoCompte, IcoPanier, IcoRecherche } from './Icones';
 
 export default function Entete() {
-  const { nbArticles, favoris } = useBoutique();
+  const { nbArticles, favoris, compte, vendeur } = useBoutique();
   const { pathname } = useLocation();
   const naviguer = useNavigate();
   const [defile, setDefile] = useState(false);
@@ -45,6 +45,10 @@ export default function Entete() {
 
         <div className="entete-actions">
           <Link to="/catalogue?chercher=1" className="btn-ico mobile-seul" aria-label="Chercher"><IcoRecherche /></Link>
+          <Link to={vendeur ? '/vendeur' : '/compte'} className="btn-ico" aria-label={vendeur ? 'Espace vendeur' : compte ? 'Mon compte' : 'Connexion ou inscription'}>
+            <IcoCompte />
+            {(compte || vendeur) && <span className="point-connecte" aria-hidden="true" />}
+          </Link>
           <Link to="/favoris" className="btn-ico bureau-seul" aria-label={`Favoris (${favoris.length})`}>
             <IcoCoeur />
             {favoris.length > 0 && <span className="pastille">{favoris.length}</span>}
