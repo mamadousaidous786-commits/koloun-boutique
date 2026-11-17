@@ -552,6 +552,31 @@ main { min-height: 70vh; }
   .page-speciale { padding-bottom: 120px; }
 }
 
+
+/* ---------- Télécharger l'application ---------- */
+.encart-appli { display: grid; grid-template-columns: 64px 1fr; gap: 14px 16px; align-items: center; margin-top: 18px; padding: 16px; border-radius: 18px; background: var(--blanc); border: 1px solid var(--ligne); }
+.encart-appli img { width: 64px; height: 64px; border-radius: 16px; }
+.encart-appli h2 { font-family: var(--serif); font-size: 24px; font-weight: 600; }
+.encart-appli p { font-size: 14px; color: var(--doux); margin-top: 2px; }
+.encart-appli .btn { grid-column: 1 / -1; }
+.etapes-installation { margin: 10px 0 14px; padding-left: 22px; display: grid; gap: 10px; font-size: 15px; }
+.pied-appli { margin-top: 12px; }
+.pied-appli .btn { min-height: 40px; font-size: 14px; }
+
+/* ---------- Commande spéciale : fiche modèle ---------- */
+.nb-photos { position: absolute; right: 8px; bottom: 8px; padding: 3px 8px; border-radius: 6px; background: rgba(21,18,14,.7); color: #fff; font-size: 11px; font-weight: 700; }
+.paiement-avance { margin-top: 22px; border: 1px solid var(--ligne); border-radius: 14px; background: var(--blanc); overflow: hidden; }
+.paiement-avance > div { display: flex; justify-content: space-between; gap: 12px; padding: 12px 14px; font-size: 14px; }
+.paiement-avance > div + div { border-top: 1px solid var(--ligne); color: var(--doux); }
+.paiement-avance strong { white-space: nowrap; }
+.paiement-avance > div:first-child strong { font-size: 18px; color: var(--texte); }
+.fiche-actions-speciale { grid-template-columns: 1fr auto !important; align-items: center; }
+.fiche-actions-speciale .btn { white-space: normal; }
+@media (min-width: 640px) {
+  .encart-appli { grid-template-columns: 64px 1fr auto; }
+  .encart-appli .btn { grid-column: auto; }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; scroll-behavior: auto !important; }
   .poster { transform: translateX(calc(var(--d) * 70%)) scale(calc(1 - var(--abs) * .12)); }

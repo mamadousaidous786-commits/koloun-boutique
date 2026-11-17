@@ -7,6 +7,7 @@ import Affiche from '../components/Affiche';
 import CarteProduit from '../components/CarteProduit';
 import InfosBoutique from '../components/InfosBoutique';
 import Img from '../components/Img';
+import { EncartTelecharger } from '../components/Telecharger';
 import { IcoFleche } from '../components/Icones';
 
 export function GrilleSquelette({ n = 8 }) {
@@ -65,10 +66,12 @@ export default function Accueil() {
           </div>
           <div className="bandeau-texte">
             <h2>Commande spéciale</h2>
-            <p>Choisissez la paire que vous voulez parmi nos modèles, livrée en 2 à 3 semaines.</p>
+            <p>Choisissez votre modèle et votre pointure : 50 % d'avance à la commande, livraison en 2 à 3 semaines.</p>
           </div>
-          <span className="bandeau-cta">Choisir mes paires <IcoFleche width="18" height="18" /></span>
+          <span className="bandeau-cta">Voir les modèles <IcoFleche width="18" height="18" /></span>
         </Link>
+
+        <EncartTelecharger />
 
         <section aria-labelledby="titre-articles">
           <div className="titre-section">

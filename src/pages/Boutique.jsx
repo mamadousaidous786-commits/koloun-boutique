@@ -1,14 +1,9 @@
-import { useEffect, useState } from 'react';
 import InfosBoutique from '../components/InfosBoutique';
+import { BoutonTelecharger, useInstallation } from '../components/Telecharger';
 
 // Page « La boutique » : adresse, plan, contacts, installation de l'application
 export default function Boutique() {
-  const [installation, setInstallation] = useState(null);
-  useEffect(() => {
-    const f = (e) => { e.preventDefault(); setInstallation(e); };
-    window.addEventListener('beforeinstallprompt', f);
-    return () => window.removeEventListener('beforeinstallprompt', f);
-  }, []);
+  const { installee } = useInstallation();
 
   return (
     <div className="page-boutique">
@@ -19,13 +14,9 @@ export default function Boutique() {
       <InfosBoutique complet />
       <div className="page">
         <section className="installer">
-          <h2>Installer l'application</h2>
+          <h2>Télécharger l'application</h2>
           <p>Ajoutez Koloun Luxure à l'écran d'accueil de votre téléphone pour l'ouvrir comme une application.</p>
-          {installation ? (
-            <button type="button" className="btn btn-sombre" onClick={async () => { installation.prompt(); await installation.userChoice; setInstallation(null); }}>Installer sur ce téléphone</button>
-          ) : (
-            <p className="petit">Sur Android : menu ⋮ du navigateur → « Ajouter à l'écran d'accueil ». Sur iPhone : bouton Partager → « Sur l'écran d'accueil ».</p>
-          )}
+          {installee ? <p className="petit">L'application est déjà installée sur cet appareil.</p> : <BoutonTelecharger className="btn btn-sombre" />}
         </section>
       </div>
     </div>

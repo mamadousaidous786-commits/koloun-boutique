@@ -8,6 +8,8 @@ import Accueil from './pages/Accueil';
 import Catalogue from './pages/Catalogue';
 import Produit from './pages/Produit';
 import Speciales from './pages/Speciales';
+import SpecialeDetail from './pages/SpecialeDetail';
+import { BoutonTelecharger } from './components/Telecharger';
 import Panier from './pages/Panier';
 import Commande from './pages/Commande';
 import Favoris from './pages/Favoris';
@@ -44,6 +46,7 @@ function PiedPage() {
           <Link to="/boutique">Nous trouver</Link>
           <Link to="/vendeur">Espace vendeur</Link>
         </p>
+        <div className="pied-appli"><BoutonTelecharger className="btn btn-contour-clair" /></div>
       </div>
     </footer>
   );
@@ -61,6 +64,7 @@ export default function App() {
             <Route path="/catalogue" element={<Catalogue />} />
             <Route path="/article/:id" element={<Produit />} />
             <Route path="/commande-speciale" element={<Speciales />} />
+            <Route path="/commande-speciale/:id" element={<SpecialeDetail />} />
             <Route path="/panier" element={<Panier />} />
             <Route path="/c/:code" element={<Commande />} />
             <Route path="/favoris" element={<Favoris />} />
