@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { BrowserRouter, HashRouter, Link, Route, Routes, useLocation } from 'react-router-dom';
+import { BrowserRouter, HashRouter, Link, Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import { ROUTEUR_HASH, BOUTIQUE } from './config';
 import { FournisseurBoutique, useBoutique } from './store';
 import Entete from './components/Entete';
@@ -44,7 +44,7 @@ function PiedPage() {
         <p className="pied-marque">Koloun Luxure</p>
         <p>{BOUTIQUE.slogan} · {BOUTIQUE.adresse}</p>
         <p className="pied-liens">
-          <Link to="/mes-commandes">Mes commandes</Link>
+          <Link to="/compte">Mes commandes</Link>
           <Link to="/boutique">Nous trouver</Link>
           {vendeur ? <Link to="/vendeur">Espace vendeur</Link> : compte ? <Link to="/compte">Mon compte</Link> : <Link to="/compte">Connexion / Inscription</Link>}
         </p>
@@ -70,7 +70,7 @@ export default function App() {
             <Route path="/panier" element={<Panier />} />
             <Route path="/c/:code" element={<Commande />} />
             <Route path="/favoris" element={<Favoris />} />
-            <Route path="/mes-commandes" element={<Favoris onglet="commandes" />} />
+            <Route path="/mes-commandes" element={<Navigate to="/compte" replace />} />
             <Route path="/boutique" element={<Boutique />} />
             <Route path="/vendeur" element={<Vendeur />} />
             <Route path="/compte" element={<Compte />} />

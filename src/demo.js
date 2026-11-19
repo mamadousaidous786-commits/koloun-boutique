@@ -165,3 +165,6 @@ export async function clientsInscrits() { await pause(200); return [{ id: 1, nom
 export async function commandesDuClient() { await pause(200); return []; }
 export async function reglerClient() { await pause(200); return {}; }
 export async function reinitialiserClient() { await pause(200); return { mot_de_passe: 'KL123456' }; }
+export async function annulerCommande(code) { await pause(200); const l = commandes(); const c = l.find((x) => x.code === code); c.statut = 'annulee'; c.motif = 'Annulée par le client'; ecrire('kb_demo_commandes', l); return c; }
+export async function accepterCommande(id) { await pause(200); const l = commandes(); const c = l.find((x) => x.id === Number(id)); c.statut = 'validee'; ecrire('kb_demo_commandes', l); return c; }
+export async function refuserCommande(id, motif) { await pause(200); const l = commandes(); const c = l.find((x) => x.id === Number(id)); c.statut = 'annulee'; c.motif = motif; ecrire('kb_demo_commandes', l); return c; }

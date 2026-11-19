@@ -5,7 +5,7 @@ import useCharger from '../useCharger';
 import { useBoutique } from '../store';
 import Img from '../components/Img';
 import { Erreur } from './Accueil';
-import { STATUTS, gnf, lienWhatsApp, numeroInternational } from '../utils';
+import { STATUTS, gnf, libelleStatut, lienWhatsApp, numeroInternational } from '../utils';
 import { telephoneLisible } from './Compte';
 
 // Réduit une photo avant l'envoi (plus rapide sur les connexions mobiles)
@@ -30,7 +30,7 @@ function Commandes() {
   return (
     <>
       <div className="puces">
-        {[['', 'Toutes'], ['nouvelle', 'Reçues'], ['en_discussion', 'Prix en discussion'], ['validee', 'Confirmées'], ['livree', 'Livrées'], ['annulee', 'Annulées']].map(([v, l]) => (
+        {[['', 'Toutes'], ['a_confirmer', 'À confirmer'], ['validee', 'Expédiées'], ['livree', 'Livrées'], ['annulee', 'Annulées']].map(([v, l]) => (
           <button type="button" key={v} className={filtre === v ? 'puce actif' : 'puce'} onClick={() => setFiltre(v)}>{l}</button>
         ))}
       </div>
@@ -43,7 +43,7 @@ function Commandes() {
                 <span>
                   <strong>{c.client_nom} · {c.reference}</strong>
                   <small>{new Date(c.created_at).toLocaleString('fr-FR', { dateStyle: 'short', timeStyle: 'short' })} · {c.nb_lignes} article{c.nb_lignes > 1 ? 's' : ''} · {c.client_telephone}</small>
-                  <span className={`statut statut-${c.statut}`}>{STATUTS[c.statut]?.libelle}</span>
+                  <span className={`statut statut-${c.statut}`}>{libelleStatut(c.statut, c.mode_livraison)}</span>
                 </span>
                 <span className="montant">{gnf(c.total_final)}{c.total_final < c.total_initial && <s>{gnf(c.total_initial)}</s>}</span>
               </Link>

@@ -17,7 +17,7 @@ export default function Favoris({ onglet = 'favoris' }) {
     <div className="page">
       <div className="onglets" role="tablist">
         <button type="button" role="tab" aria-selected={onglet === 'favoris'} className={onglet === 'favoris' ? 'actif' : ''} onClick={() => naviguer('/favoris')}>Favoris ({favoris.length})</button>
-        <button type="button" role="tab" aria-selected={onglet === 'commandes'} className={onglet === 'commandes' ? 'actif' : ''} onClick={() => naviguer('/mes-commandes')}>Mes commandes ({mesCommandes.length})</button>
+        <button type="button" role="tab" aria-selected={onglet === 'commandes'} className={onglet === 'commandes' ? 'actif' : ''} onClick={() => naviguer('/compte')}>Mes commandes ({mesCommandes.length})</button>
       </div>
 
       {onglet === 'favoris' ? (

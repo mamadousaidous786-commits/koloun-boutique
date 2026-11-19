@@ -120,7 +120,7 @@ export default function Produit() {
 
           <div className="fiche-actions">
             <button type="button" className="btn btn-sombre btn-large" onClick={auPanier} disabled={stockVariante === 0}>Ajouter au panier</button>
-            <button type="button" className="btn btn-wa btn-large" onClick={() => exigerTaille() && setFeuille(true)} disabled={stockVariante === 0}><IcoWhatsApp /> Commander maintenant</button>
+            <button type="button" className="btn btn-or btn-large" onClick={() => exigerTaille() && setFeuille(true)} disabled={stockVariante === 0}>Commander maintenant</button>
             <div className="fiche-secondaires">
               <button type="button" className={`btn-rond clair ${fav ? 'actif' : ''}`} onClick={() => basculerFavori(p.id)} aria-pressed={fav} aria-label={fav ? 'Retirer des favoris' : 'Ajouter aux favoris'}><IcoCoeur plein={fav} /></button>
               <button type="button" className="btn-rond clair" onClick={partager} aria-label="Partager"><IcoPartager /></button>

@@ -4,7 +4,7 @@ import { api } from '../api';
 import { useBoutique } from '../store';
 import useCharger from '../useCharger';
 import Img from '../components/Img';
-import { STATUTS, gnf, lienWhatsApp } from '../utils';
+import { STATUTS, gnf, libelleStatut, lienWhatsApp } from '../utils';
 
 const GOOGLE_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || '';
 
@@ -152,8 +152,18 @@ function Authentification() {
   );
 }
 
+const ONGLETS = [
+  ['attente', 'En attente'],
+  ['expediees', 'Expédiées'],
+  ['livrees', 'Livrées'],
+  ['annulees', 'Annulées'],
+];
+
 function MonCompte() {
   const { compte, setCompte } = useBoutique();
+  const [params, setParams] = useSearchParams();
+  const onglet = ONGLETS.some(([k]) => k === params.get('onglet')) ? params.get('onglet') : 'attente';
+  const nouvelle = params.get('nouvelle');
   const res = useCharger(() => api.monCompte(), [compte?.token]);
   const [edition, setEdition] = useState(false);
   const [champs, setChamps] = useState({ nom: '', telephone: '', ancien: '', nouveau: '' });
@@ -181,6 +191,9 @@ function MonCompte() {
   };
 
   const commandes = res.donnees?.commandes || [];
+  const parOnglet = (k) => commandes.filter((x) => (STATUTS[x.statut] || STATUTS.nouvelle).onglet === k);
+  const choisirOnglet = (k) => { const p = new URLSearchParams(params); p.set('onglet', k); p.delete('nouvelle'); setParams(p, { replace: true }); };
+  const visibles = parOnglet(onglet);
 
   return (
     <div className="page page-compte">
@@ -215,26 +228,42 @@ function MonCompte() {
 
       <section aria-labelledby="titre-mes-commandes">
         <div className="titre-section"><h2 id="titre-mes-commandes">Mes commandes</h2></div>
-        {res.chargement && !res.donnees ? <p className="ligne-attente" /> : commandes.length ? (
+        {nouvelle && (
+          <div className="bandeau-ok" role="status">
+            <p><strong>Commande {nouvelle} envoyée.</strong> La boutique va la confirmer : elle passera dans « Expédiées ».</p>
+          </div>
+        )}
+        <div className="onglets-commandes" role="tablist" aria-label="Mes commandes">
+          {ONGLETS.map(([k, l]) => {
+            const n = parOnglet(k).length;
+            return (
+              <button key={k} type="button" role="tab" aria-selected={onglet === k} className={onglet === k ? 'actif' : ''} onClick={() => choisirOnglet(k)}>
+                {l}{n > 0 && <span className="compteur-onglet">{n}</span>}
+              </button>
+            );
+          })}
+        </div>
+        {res.chargement && !res.donnees ? <p className="ligne-attente" /> : visibles.length ? (
           <ul className="liste-commandes">
-            {commandes.map((x) => (
+            {visibles.map((x) => (
               <li key={x.code}>
                 <Link to={`/c/${x.code}`}>
                   <Img src={x.image} alt="" />
                   <span>
                     <strong>{x.reference}</strong>
-                    <small>{new Date(x.date).toLocaleDateString('fr-FR')} · {x.nb} article{x.nb > 1 ? 's' : ''}</small>
-                    <span className={`statut statut-${x.statut}`}>{STATUTS[x.statut]?.libelle}</span>
+                    <small>{new Date(x.date).toLocaleDateString('fr-FR')} · {x.nb} article{x.nb > 1 ? 's' : ''} · {x.mode_livraison === 'retrait' ? 'Retrait' : 'Livraison'}</small>
+                    <span className={`statut statut-${x.statut}`}>{libelleStatut(x.statut, x.mode_livraison)}</span>
+                    {x.statut === 'annulee' && x.motif && <small className="motif">{x.motif}</small>}
                   </span>
-                  <span className="montant">{gnf(x.total)}{x.total < x.total_initial && <s>{gnf(x.total_initial)}</s>}</span>
+                  <span className="montant">{gnf(x.total + (x.frais_livraison || 0))}{x.total < x.total_initial && <s>{gnf(x.total_initial)}</s>}</span>
                 </Link>
               </li>
             ))}
           </ul>
         ) : (
           <div className="vide-compte">
-            <p>Vous n'avez pas encore commandé avec ce compte.</p>
-            <Link to="/catalogue" className="btn btn-sombre">Voir le catalogue</Link>
+            <p>{{ attente: 'Aucune commande en attente.', expediees: 'Aucune commande expédiée pour le moment.', livrees: 'Aucune commande livrée pour le moment.', annulees: 'Aucune commande annulée.' }[onglet]}</p>
+            {onglet === 'attente' && !commandes.length && <Link to="/catalogue" className="btn btn-sombre">Voir le catalogue</Link>}
           </div>
         )}
       </section>

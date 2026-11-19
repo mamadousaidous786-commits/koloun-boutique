@@ -40,10 +40,19 @@ export const ecrire = (cle, valeur) => {
   try { localStorage.setItem(cle, JSON.stringify(valeur)); } catch { /* stockage indisponible */ }
 };
 
+// Les onglets de « Mes commandes » : En attente → Expédiée (ou Prête à retirer) → Livrée, ou Annulée
 export const STATUTS = {
-  nouvelle: { libelle: 'Reçue', etape: 1 },
-  en_discussion: { libelle: 'Prix en discussion', etape: 1 },
-  validee: { libelle: 'Confirmée par la boutique', etape: 2 },
-  livree: { libelle: 'Livrée', etape: 3 },
-  annulee: { libelle: 'Annulée', etape: 0 },
+  nouvelle: { libelle: 'En attente', etape: 1, onglet: 'attente' },
+  en_discussion: { libelle: 'En attente', etape: 1, onglet: 'attente' },
+  validee: { libelle: 'Expédiée', etape: 2, onglet: 'expediees' },
+  livree: { libelle: 'Livrée', etape: 3, onglet: 'livrees' },
+  annulee: { libelle: 'Annulée', etape: 0, onglet: 'annulees' },
 };
+export const libelleStatut = (statut, mode) => {
+  if (mode === 'retrait' && statut === 'validee') return 'Prête à retirer';
+  if (mode === 'retrait' && statut === 'livree') return 'Retirée';
+  return (STATUTS[statut] || STATUTS.nouvelle).libelle;
+};
+
+// « Discuter » : WhatsApp avec la référence et le lien de la commande
+export const messageDiscuter = (c) => `Bonjour Koloun Luxure 👋\nJ'ai une question sur ma commande ${c.reference} :\n\n${lienCommande(c.code)}`;

@@ -624,6 +624,29 @@ main { min-height: 70vh; }
   .lc-commandes li { grid-template-columns: 1fr auto auto auto; }
 }
 
+
+/* ---------- Circuit de commande ---------- */
+.choix-mode { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.choix-mode button { display: grid; gap: 2px; text-align: left; padding: 12px; border-radius: 12px; border: 1.5px solid var(--ligne); background: var(--blanc); }
+.choix-mode button strong { font-size: 14px; }
+.choix-mode button small { font-size: 12px; color: var(--doux); font-weight: 500; }
+.choix-mode button.actif { border-color: var(--noir); box-shadow: inset 0 0 0 1px var(--noir); }
+.exige-compte { display: grid; gap: 12px; padding: 4px 0 8px; }
+.exige-compte > p:first-child { font-weight: 600; }
+.onglets-commandes { display: flex; gap: 6px; overflow-x: auto; margin: 0 -16px 14px; padding: 0 16px 4px; scrollbar-width: none; }
+.onglets-commandes::-webkit-scrollbar { display: none; }
+.onglets-commandes button { flex: none; display: inline-flex; align-items: center; gap: 6px; height: 40px; padding: 0 14px; border-radius: 20px; border: 1px solid var(--ligne); background: var(--blanc); font-weight: 700; font-size: 14px; color: var(--doux); }
+.onglets-commandes button.actif { background: var(--noir); border-color: var(--noir); color: #fff; }
+.compteur-onglet { min-width: 20px; height: 20px; padding: 0 6px; border-radius: 10px; background: var(--or); color: var(--noir); font-size: 11px; font-weight: 800; display: grid; place-items: center; }
+.liste-commandes small.motif { color: var(--alerte); margin: 2px 0 0; }
+.bloc-reception { padding: 14px 16px; background: var(--blanc); border: 1px solid var(--ligne); border-radius: 14px; margin-bottom: 16px; display: grid; gap: 4px; }
+.mot-annule { border-left-color: var(--alerte); }
+.btn-annuler { color: var(--alerte); border-color: #e7b4ae; }
+.btn-annuler:hover:not(:disabled) { background: var(--alerte) !important; color: #fff !important; border-color: var(--alerte); }
+.pv-refus { display: grid; grid-template-columns: 1fr auto; gap: 8px; }
+.pv-refus input { height: 46px; border-radius: 12px; border: 1.5px solid var(--noir-3); padding: 0 12px; font-size: 15px; min-width: 0; }
+@media (min-width: 960px) { .onglets-commandes { margin: 0 0 14px; padding: 0; } }
+
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; scroll-behavior: auto !important; }
   .poster { transform: translateX(calc(var(--d) * 70%)) scale(calc(1 - var(--abs) * .12)); }
