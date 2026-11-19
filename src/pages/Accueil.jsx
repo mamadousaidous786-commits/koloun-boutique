@@ -8,6 +8,7 @@ import CarteProduit from '../components/CarteProduit';
 import InfosBoutique from '../components/InfosBoutique';
 import Img from '../components/Img';
 import { EncartTelecharger } from '../components/Telecharger';
+import { EncartArrivages } from '../components/Arrivages';
 import { IcoFleche } from '../components/Icones';
 
 export function GrilleSquelette({ n = 8 }) {
@@ -72,6 +73,7 @@ export default function Accueil() {
         </Link>
 
         <EncartTelecharger />
+        <EncartArrivages />
 
         <section aria-labelledby="titre-articles">
           <div className="titre-section">

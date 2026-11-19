@@ -5,6 +5,7 @@ import { useBoutique } from '../store';
 import useCharger from '../useCharger';
 import Img from '../components/Img';
 import { STATUTS, gnf, libelleStatut, lienWhatsApp } from '../utils';
+import { ReglageArrivages } from '../components/Arrivages';
 
 const GOOGLE_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || '';
 
@@ -225,6 +226,8 @@ function MonCompte() {
           <button type="button" className="btn btn-contour" onClick={() => setCompte(null)}>Se déconnecter</button>
         </div>
       )}
+
+      <ReglageArrivages />
 
       <section aria-labelledby="titre-mes-commandes">
         <div className="titre-section"><h2 id="titre-mes-commandes">Mes commandes</h2></div>

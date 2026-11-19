@@ -2,6 +2,7 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App';
 import './styles.css';
+import { resynchroniserNotifications } from './notifications';
 
 // « Télécharger l'application » : le navigateur propose l'installation très tôt, on garde sa proposition
 // pour l'afficher quand le client appuie sur le bouton.
@@ -23,5 +24,5 @@ ReactDOM.createRoot(document.getElementById('root')).render(
 
 // Application installable (écran d'accueil du téléphone, puis Play Store)
 if ('serviceWorker' in navigator && import.meta.env.PROD && import.meta.env.VITE_HASH !== '1') {
-  window.addEventListener('load', () => navigator.serviceWorker.register('/sw.js').catch(() => {}));
+  window.addEventListener('load', () => navigator.serviceWorker.register('/sw.js').then(resynchroniserNotifications).catch(() => {}));
 }

@@ -1,5 +1,5 @@
 // Koloun Boutique — service worker : l'application s'ouvre même avec une connexion faible.
-const VERSION = 'kb-v1';
+const VERSION = 'kb-v2';
 const COQUILLE = ['/', '/index.html', '/manifest.webmanifest', '/logo.jpg', '/icon-192.png'];
 
 self.addEventListener('install', (e) => {
@@ -8,6 +8,31 @@ self.addEventListener('install', (e) => {
 
 self.addEventListener('activate', (e) => {
   e.waitUntil(caches.keys().then((cles) => Promise.all(cles.filter((k) => k !== VERSION).map((k) => caches.delete(k)))).then(() => self.clients.claim()));
+});
+
+// « Nouvel arrivage » : notification envoyée par Koloun Gestion quand un produit est ajouté
+self.addEventListener('push', (e) => {
+  let d = {};
+  try { d = e.data ? e.data.json() : {}; } catch { d = { corps: e.data && e.data.text() }; }
+  e.waitUntil(self.registration.showNotification(d.titre || 'Koloun Luxure', {
+    body: d.corps || 'Nouveaux articles disponibles.',
+    icon: '/icon-192.png',
+    badge: '/icon-192.png',
+    image: d.image,
+    tag: d.tag || 'koloun',
+    data: { url: d.url || '/' },
+  }));
+});
+
+// Toucher la notification ouvre l'article (dans l'application si elle est déjà ouverte)
+self.addEventListener('notificationclick', (e) => {
+  e.notification.close();
+  const cible = new URL(e.notification.data?.url || '/', self.location.origin).href;
+  e.waitUntil(self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((fenetres) => {
+    const ouverte = fenetres.find((f) => new URL(f.url).origin === self.location.origin);
+    if (ouverte) return ouverte.focus().then((f) => (f && 'navigate' in f ? f.navigate(cible) : null));
+    return self.clients.openWindow(cible);
+  }));
 });
 
 self.addEventListener('fetch', (e) => {

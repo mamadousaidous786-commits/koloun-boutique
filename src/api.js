@@ -81,5 +81,9 @@ export const api = {
   modifierSpeciale: appel('modifierSpeciale', (id, formulaire) => requete(`/boutique/admin/speciales/${id}`, { methode: 'PUT', formulaire, token: jeton() })),
   retirerSpeciale: appel('retirerSpeciale', (id) => requete(`/boutique/admin/speciales/${id}`, { methode: 'DELETE', token: jeton() })),
   produitsAdmin: appel('produitsAdmin', () => requete('/boutique/admin/produits', { token: jeton() })),
+  // Notifications « Nouvel arrivage »
+  cleNotifications: () => requete('/boutique/notifications/cle'),
+  abonnerNotifications: (abonnement) => requete('/boutique/notifications/abonner', { methode: 'POST', corps: abonnement, token: jetonClient() }),
+  desabonnerNotifications: (endpoint) => requete('/boutique/notifications/desabonner', { methode: 'POST', corps: { endpoint } }),
   reglerProduit: appel('reglerProduit', (id, corps) => requete(`/boutique/admin/produits/${id}`, { methode: 'PATCH', corps, token: jeton() })),
 };
