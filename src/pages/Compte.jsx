@@ -6,6 +6,7 @@ import useCharger from '../useCharger';
 import Img from '../components/Img';
 import { STATUTS, gnf, libelleStatut, lienWhatsApp } from '../utils';
 import { ReglageArrivages } from '../components/Arrivages';
+import { estAppliIphone, preparerCodeGoogle, recupererConnexionGoogle, URL_RETOUR_GOOGLE } from '../googleIphone';
 
 const GOOGLE_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || '';
 
@@ -22,12 +23,23 @@ function BoutonGoogle({ onJeton }) {
   rappel.current = onJeton;
   useEffect(() => {
     if (!GOOGLE_ID) return undefined;
-    const dessiner = () => {
+    let annule = false;
+    const dessiner = async () => {
       if (!window.google?.accounts?.id || !zone.current) return;
-      window.google.accounts.id.initialize({ client_id: GOOGLE_ID, callback: (r) => rappel.current(r.credential) });
+      const reglages = { client_id: GOOGLE_ID, callback: (r) => rappel.current(r.credential) };
+      // iPhone, application installée : redirection vers Google puis retour (la fenêtre ne marche qu'une fois)
+      if (estAppliIphone()) {
+        try {
+          reglages.nonce = await preparerCodeGoogle();
+          reglages.ux_mode = 'redirect';
+          reglages.login_uri = URL_RETOUR_GOOGLE;
+        } catch { /* serveur injoignable : on garde la fenêtre Google */ }
+      }
+      if (annule || !zone.current) return;
+      window.google.accounts.id.initialize(reglages);
       window.google.accounts.id.renderButton(zone.current, { theme: 'outline', size: 'large', shape: 'pill', text: 'continue_with', locale: 'fr', width: Math.min(360, zone.current.offsetWidth || 320) });
     };
-    if (window.google?.accounts?.id) { dessiner(); return undefined; }
+    if (window.google?.accounts?.id) { dessiner(); return () => { annule = true; }; }
     let script = document.getElementById('gsi');
     if (!script) {
       script = document.createElement('script');
@@ -37,7 +49,7 @@ function BoutonGoogle({ onJeton }) {
       document.head.appendChild(script);
     }
     script.addEventListener('load', dessiner);
-    return () => script.removeEventListener('load', dessiner);
+    return () => { annule = true; script.removeEventListener('load', dessiner); };
   }, []);
   if (!GOOGLE_ID) return null;
   return (
@@ -90,6 +102,18 @@ function Authentification() {
       setErreur(err.message);
     } finally { setEnvoi(false); }
   };
+
+  // Retour dans l'application après la connexion Google (iPhone) : on récupère la connexion
+  useEffect(() => {
+    const verifier = () => {
+      if (document.visibilityState !== 'visible') return;
+      recupererConnexionGoogle().then((r) => r && reussi(r)).catch((err) => setErreur(err.message));
+    };
+    verifier();
+    document.addEventListener('visibilitychange', verifier);
+    window.addEventListener('focus', verifier);
+    return () => { document.removeEventListener('visibilitychange', verifier); window.removeEventListener('focus', verifier); };
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const google = async (credential) => {
     setErreur('');

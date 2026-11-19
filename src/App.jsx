@@ -16,6 +16,7 @@ import Favoris from './pages/Favoris';
 import Vendeur from './pages/Vendeur';
 import Boutique from './pages/Boutique';
 import Compte from './pages/Compte';
+import ConnexionGoogle from './pages/ConnexionGoogle';
 
 const Routeur = ROUTEUR_HASH ? HashRouter : BrowserRouter;
 
@@ -74,6 +75,7 @@ export default function App() {
             <Route path="/boutique" element={<Boutique />} />
             <Route path="/vendeur" element={<Vendeur />} />
             <Route path="/compte" element={<Compte />} />
+            <Route path="/connexion-google" element={<ConnexionGoogle />} />
             <Route path="*" element={<div className="page vide"><h1>Page introuvable</h1><Link className="btn btn-sombre" to="/">Retour à l'accueil</Link></div>} />
           </Routes>
         </main>

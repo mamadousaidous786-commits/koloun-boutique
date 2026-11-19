@@ -81,6 +81,9 @@ export const api = {
   modifierSpeciale: appel('modifierSpeciale', (id, formulaire) => requete(`/boutique/admin/speciales/${id}`, { methode: 'PUT', formulaire, token: jeton() })),
   retirerSpeciale: appel('retirerSpeciale', (id) => requete(`/boutique/admin/speciales/${id}`, { methode: 'DELETE', token: jeton() })),
   produitsAdmin: appel('produitsAdmin', () => requete('/boutique/admin/produits', { token: jeton() })),
+  // Connexion Google sur iPhone (application installée)
+  preparerGoogle: (nonce, origine) => requete('/boutique/auth/google/preparer', { methode: 'POST', corps: { nonce, origine } }),
+  attenteGoogle: (nonce) => requete(`/boutique/auth/google/attente/${encodeURIComponent(nonce)}`),
   // Notifications « Nouvel arrivage »
   cleNotifications: () => requete('/boutique/notifications/cle'),
   abonnerNotifications: (abonnement) => requete('/boutique/notifications/abonner', { methode: 'POST', corps: abonnement, token: jetonClient() }),
