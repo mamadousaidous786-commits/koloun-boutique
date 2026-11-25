@@ -6,6 +6,7 @@ import { useBoutique } from '../store';
 import Vue3D from '../components/Vue3D';
 import CarteProduit from '../components/CarteProduit';
 import FeuilleCommande from '../components/FeuilleCommande';
+import AlerteTaille from '../components/AlerteTaille';
 import { Erreur } from './Accueil';
 import { IcoCoeur, IcoMoins, IcoPartager, IcoPlus, IcoRetour, IcoWhatsApp } from '../components/Icones';
 import { gnf, lienWhatsApp } from '../utils';
@@ -22,11 +23,12 @@ export default function Produit() {
   const [qte, setQte] = useState(1);
   const [feuille, setFeuille] = useState(false);
   const [alerteTaille, setAlerteTaille] = useState(false);
+  const [epuiseeId, setEpuiseeId] = useState(null); // taille épuisée touchée → « Me prévenir »
 
   const p = produit.donnees;
-  useEffect(() => { setIv(0); setTailleId(null); setQte(1); }, [id]);
+  useEffect(() => { setIv(0); setTailleId(null); setQte(1); setEpuiseeId(null); }, [id]);
   useEffect(() => { if (p) marquerVu(p.id); }, [p?.id]); // eslint-disable-line react-hooks/exhaustive-deps
-  useEffect(() => { setTailleId(null); setQte(1); }, [iv]);
+  useEffect(() => { setTailleId(null); setQte(1); setEpuiseeId(null); }, [iv]);
 
   const similaires = useMemo(() => {
     if (!p || !tous.donnees) return [];
@@ -94,9 +96,9 @@ export default function Produit() {
                     type="button"
                     role="radio"
                     aria-checked={t.id === tailleId}
-                    disabled={t.stock === 0}
-                    className={`taille ${t.id === tailleId ? 'actif' : ''}`}
-                    onClick={() => { setTailleId(t.id); setQte(1); }}
+                    aria-label={t.stock === 0 ? `Taille ${t.taille}, épuisée : être prévenu de son retour` : undefined}
+                    className={`taille ${t.id === tailleId ? 'actif' : ''} ${t.stock === 0 ? 'epuisee' : ''} ${t.id === epuiseeId ? 'visee' : ''}`}
+                    onClick={() => (t.stock === 0 ? (setEpuiseeId(t.id), setTailleId(null)) : (setTailleId(t.id), setEpuiseeId(null), setQte(1)))}
                   >
                     {t.taille}
                     {t.stock > 0 && t.stock <= 2 && <small>{t.stock} restant{t.stock > 1 ? 's' : ''}</small>}
@@ -104,6 +106,7 @@ export default function Produit() {
                 ))}
               </div>
             ) : <p className="petit">Tailles non renseignées : demandez sur WhatsApp.</p>}
+            <AlerteTaille taille={variante.tailles.find((t) => t.id === epuiseeId)} />
             {stockVariante === 0 && <p className="info-epuise">Ce modèle est épuisé. <Link to="/commande-speciale">Le commander en commande spéciale</Link></p>}
           </div>
 

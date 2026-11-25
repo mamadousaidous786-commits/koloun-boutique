@@ -186,3 +186,8 @@ export async function reserver(corps) {
   return { numero, total, compte: maj };
 }
 export async function annulerReservation(numero) { await pause(200); const l = lire('kb_demo_resas', []); const r = l.find((x) => x.numero === numero); if (r) { r.statut = 'annulee'; r.motif = 'Annulée par le client'; } ecrire('kb_demo_resas', l); return { ok: true }; }
+
+// Alertes de taille (démo)
+export async function mesAlertes() { await pause(150); return lire('kb_demo_alertes', []); }
+export async function creerAlerte(id) { await pause(200); const l = lire('kb_demo_alertes', []).filter((a) => a.produit_taille_id !== id); l.unshift({ produit_taille_id: id, statut: 'attente', nom: 'Article', taille: '', date: new Date().toISOString() }); ecrire('kb_demo_alertes', l); return { message: 'Vous serez prévenu dès que la taille revient.' }; }
+export async function supprimerAlerte(id) { await pause(150); ecrire('kb_demo_alertes', lire('kb_demo_alertes', []).filter((a) => a.produit_taille_id !== id)); return { ok: true }; }

@@ -6,6 +6,7 @@ import useCharger from '../useCharger';
 import Img from '../components/Img';
 import { STATUTS, gnf, libelleStatut, lienWhatsApp } from '../utils';
 import { ReglageArrivages } from '../components/Arrivages';
+import { oublierAlertes } from '../components/AlerteTaille';
 import { estAppliIphone, preparerCodeGoogle, recupererConnexionGoogle, URL_RETOUR_GOOGLE } from '../googleIphone';
 
 const GOOGLE_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || '';
@@ -228,6 +229,8 @@ function MonCompte() {
   const parOnglet = (k) => commandes.filter((x) => (STATUTS[x.statut] || STATUTS.nouvelle).onglet === k);
   const choisirOnglet = (k) => { const p = new URLSearchParams(params); p.set('onglet', k); p.delete('nouvelle'); p.delete('reservee'); setParams(p, { replace: true }); };
   const reservations = res.donnees?.reservations || [];
+  const alertes = res.donnees?.alertes || [];
+  const retirerAlerte = async (id) => { try { await api.supprimerAlerte(id); oublierAlertes(); res.recharger(); } catch (err) { setMsg({ ok: false, texte: err.message }); } };
   const resasActives = reservations.filter((x) => ['a_confirmer', 'en_attente'].includes(x.statut));
   const visibles = onglet === 'reservations' ? [] : parOnglet(onglet);
   const annulerResa = async (numero) => {
@@ -268,6 +271,26 @@ function MonCompte() {
 
       <ReglageArrivages />
 
+      {alertes.length > 0 && (
+        <section aria-labelledby="titre-alertes">
+          <div className="titre-section"><h2 id="titre-alertes">Tailles attendues</h2></div>
+          <ul className="alertes-compte">
+            {alertes.map((a) => (
+              <li key={a.produit_taille_id}>
+                <Img src={a.image} alt="" />
+                <Link to={`/article/${a.produit_id}`}>
+                  <strong>{a.nom}</strong>
+                  <small className="petit"> · Taille {a.taille}</small>
+                  <br />
+                  {a.disponible ? <span className="de-retour">De retour : réservez-la !</span> : <small className="petit">En attente · on vous prévient</small>}
+                </Link>
+                <button type="button" className="lien-annuler" onClick={() => retirerAlerte(a.produit_taille_id)} aria-label={`Ne plus attendre ${a.nom} taille ${a.taille}`}>Retirer</button>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+
       <section aria-labelledby="titre-mes-commandes">
         <div className="titre-section"><h2 id="titre-mes-commandes">Mes commandes</h2></div>
         {reservee && (
@@ -301,6 +324,7 @@ function MonCompte() {
                       <strong>{x.numero}</strong>
                       <small>{new Date(x.date).toLocaleDateString('fr-FR')} · {x.nb} article{x.nb > 1 ? 's' : ''}{x.date_retrait_prevue ? ` · passage le ${new Date(x.date_retrait_prevue).toLocaleDateString('fr-FR')}` : ''}</small>
                       <small>{x.articles.map((a) => `${a.nom}${a.taille ? ` T.${a.taille}` : ''} ×${a.quantite}`).join(', ')}</small>
+                      {x.statut === 'en_attente' && x.date_expiration && <small className="resa-delai">À venir chercher avant le {new Date(x.date_expiration).toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' })}</small>}
                       <span className={`statut statut-resa-${x.statut}`}>{STATUTS_RESA[x.statut] || x.statut}</span>
                       {x.statut === 'annulee' && x.motif && <small className="motif">{x.motif}</small>}
                       {x.statut === 'a_confirmer' && <button type="button" className="lien-annuler" onClick={() => annulerResa(x.numero)}>Annuler</button>}
