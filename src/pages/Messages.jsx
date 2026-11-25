@@ -67,7 +67,9 @@ function Bulle({ m }) {
   const moi = m.auteur === 'client';
   const d = m.donnees || {};
   let contenu;
-  if (m.type === 'image') {
+  if (m.type === 'image' && d.expiree) {
+    contenu = <p className="photo-expiree">📷 Photo effacée (les photos restent 24 h)</p>;
+  } else if (m.type === 'image') {
     contenu = <><a href={d.url} target="_blank" rel="noreferrer"><img className="chat-photo" src={d.url} alt="Photo envoyée" loading="lazy" /></a>{m.texte && <p>{m.texte}</p>}</>;
   } else if (m.type === 'produit') {
     contenu = (
@@ -217,7 +219,7 @@ export default function Messages() {
 
       <div className="chat-fil" aria-live="polite" ref={fil}>
         {messages === null ? <p className="ligne-attente" /> : !messages.length ? (
-          <p className="chat-systeme">Posez votre question : taille, prix, disponibilité… La boutique vous répond ici.</p>
+          <p className="chat-systeme">Posez votre question : taille, prix, disponibilité… La boutique vous répond ici. Les photos envoyées sont effacées au bout de 24 h.</p>
         ) : messages.map((m) => {
           const j = jour(m.created_at);
           const separateur = j !== jourPrecedent; jourPrecedent = j;
@@ -228,7 +230,7 @@ export default function Messages() {
 
       <form className="chat-saisie" onSubmit={envoyer}>
         {erreur && <p className="erreur chat-erreur" role="alert">{erreur}</p>}
-        <button type="button" className="btn-ico" onClick={() => fichier.current?.click()} disabled={envoi} aria-label="Envoyer une photo"><IcoPhoto /></button>
+        <button type="button" className="btn-ico" onClick={() => fichier.current?.click()} disabled={envoi} aria-label="Envoyer une photo (effacée après 24 h)" title="Photo (effacée après 24 h)"><IcoPhoto /></button>
         <input ref={fichier} type="file" accept="image/*" hidden onChange={(e) => envoyerPhoto(e.target.files?.[0])} />
         <textarea
           value={texte} onChange={(e) => setTexte(e.target.value)} rows={1} placeholder="Écrire un message…" aria-label="Message"

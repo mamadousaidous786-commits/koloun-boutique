@@ -750,3 +750,4 @@ main { min-height: 70vh; }
 .chat-erreur { flex-basis: 100%; margin: 0 0 4px; }
 @media (min-width: 900px) { .chat-saisie { bottom: 0; } }
 @media (max-width: 420px) { .marque-nom { font-size: 19px; white-space: nowrap; } .entete-actions .btn-ico { width: 40px; } }
+.photo-expiree { font-style: italic; opacity: .7; }
