@@ -68,7 +68,7 @@ export default function FeuilleCommande({ ouverte, onFermer, lignes, onEnvoye })
       <div className="feuille" role="dialog" aria-modal="true" aria-labelledby="titre-feuille" onClick={(e) => e.stopPropagation()}>
         <div className="feuille-poignee" aria-hidden="true" />
         <div className="feuille-tete">
-          <h2 id="titre-feuille">Valider la commande</h2>
+          <h2 id="titre-feuille">Commander</h2>
           <button type="button" className="btn-ico" onClick={onFermer} aria-label="Fermer"><IcoFermer /></button>
         </div>
 
@@ -111,7 +111,7 @@ export default function FeuilleCommande({ ouverte, onFermer, lignes, onEnvoye })
             <label><span>Message pour la boutique (facultatif)</span><input value={note} onChange={(e) => setNote(e.target.value)} placeholder="Ex. : appeler avant de venir" /></label>
 
             {erreur && <p className="erreur" role="alert">{erreur}</p>}
-            <button type="submit" className="btn btn-sombre btn-large" disabled={envoi}>{envoi ? 'Envoi…' : `Valider la commande · ${gnf(total)}`}</button>
+            <button type="submit" className="btn btn-sombre btn-large" disabled={envoi}>{envoi ? 'Envoi…' : `Commander · ${gnf(total)}`}</button>
             <p className="petit">
               {mode === 'livraison'
                 ? 'La boutique confirme votre commande et les frais de livraison. Vous payez à la réception.'

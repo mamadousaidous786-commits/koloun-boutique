@@ -177,8 +177,16 @@ function Authentification() {
   );
 }
 
+const STATUTS_RESA = {
+  a_confirmer: 'En attente de confirmation',
+  en_attente: 'Confirmée · mise de côté',
+  retiree: 'Retirée',
+  annulee: 'Annulée',
+};
+
 const ONGLETS = [
   ['attente', 'En attente'],
+  ['reservations', 'Réservations'],
   ['expediees', 'Expédiées'],
   ['livrees', 'Livrées'],
   ['annulees', 'Annulées'],
@@ -189,6 +197,7 @@ function MonCompte() {
   const [params, setParams] = useSearchParams();
   const onglet = ONGLETS.some(([k]) => k === params.get('onglet')) ? params.get('onglet') : 'attente';
   const nouvelle = params.get('nouvelle');
+  const reservee = params.get('reservee');
   const res = useCharger(() => api.monCompte(), [compte?.token]);
   const [edition, setEdition] = useState(false);
   const [champs, setChamps] = useState({ nom: '', telephone: '', ancien: '', nouveau: '' });
@@ -217,8 +226,14 @@ function MonCompte() {
 
   const commandes = res.donnees?.commandes || [];
   const parOnglet = (k) => commandes.filter((x) => (STATUTS[x.statut] || STATUTS.nouvelle).onglet === k);
-  const choisirOnglet = (k) => { const p = new URLSearchParams(params); p.set('onglet', k); p.delete('nouvelle'); setParams(p, { replace: true }); };
-  const visibles = parOnglet(onglet);
+  const choisirOnglet = (k) => { const p = new URLSearchParams(params); p.set('onglet', k); p.delete('nouvelle'); p.delete('reservee'); setParams(p, { replace: true }); };
+  const reservations = res.donnees?.reservations || [];
+  const resasActives = reservations.filter((x) => ['a_confirmer', 'en_attente'].includes(x.statut));
+  const visibles = onglet === 'reservations' ? [] : parOnglet(onglet);
+  const annulerResa = async (numero) => {
+    if (!window.confirm(`Annuler la réservation ${numero} ?`)) return;
+    try { await api.annulerReservation(numero); res.recharger(); } catch (err) { setMsg({ ok: false, texte: err.message }); }
+  };
 
   return (
     <div className="page page-compte">
@@ -255,6 +270,11 @@ function MonCompte() {
 
       <section aria-labelledby="titre-mes-commandes">
         <div className="titre-section"><h2 id="titre-mes-commandes">Mes commandes</h2></div>
+        {reservee && (
+          <div className="bandeau-ok" role="status">
+            <p><strong>Réservation {reservee} envoyée.</strong> La boutique va la confirmer et mettre vos articles de côté. Vous payez au retrait à Lambanyi.</p>
+          </div>
+        )}
         {nouvelle && (
           <div className="bandeau-ok" role="status">
             <p><strong>Commande {nouvelle} envoyée.</strong> La boutique va la confirmer : elle passera dans « Expédiées ».</p>
@@ -262,7 +282,7 @@ function MonCompte() {
         )}
         <div className="onglets-commandes" role="tablist" aria-label="Mes commandes">
           {ONGLETS.map(([k, l]) => {
-            const n = parOnglet(k).length;
+            const n = k === 'reservations' ? resasActives.length : parOnglet(k).length;
             return (
               <button key={k} type="button" role="tab" aria-selected={onglet === k} className={onglet === k ? 'actif' : ''} onClick={() => choisirOnglet(k)}>
                 {l}{n > 0 && <span className="compteur-onglet">{n}</span>}
@@ -270,7 +290,33 @@ function MonCompte() {
             );
           })}
         </div>
-        {res.chargement && !res.donnees ? <p className="ligne-attente" /> : visibles.length ? (
+        {onglet === 'reservations' ? (
+          reservations.length ? (
+            <ul className="liste-commandes liste-resas">
+              {reservations.map((x) => (
+                <li key={x.numero}>
+                  <div className="resa-client">
+                    <Img src={x.image} alt="" />
+                    <span>
+                      <strong>{x.numero}</strong>
+                      <small>{new Date(x.date).toLocaleDateString('fr-FR')} · {x.nb} article{x.nb > 1 ? 's' : ''}{x.date_retrait_prevue ? ` · passage le ${new Date(x.date_retrait_prevue).toLocaleDateString('fr-FR')}` : ''}</small>
+                      <small>{x.articles.map((a) => `${a.nom}${a.taille ? ` T.${a.taille}` : ''} ×${a.quantite}`).join(', ')}</small>
+                      <span className={`statut statut-resa-${x.statut}`}>{STATUTS_RESA[x.statut] || x.statut}</span>
+                      {x.statut === 'annulee' && x.motif && <small className="motif">{x.motif}</small>}
+                      {x.statut === 'a_confirmer' && <button type="button" className="lien-annuler" onClick={() => annulerResa(x.numero)}>Annuler</button>}
+                    </span>
+                    <span className="montant">{gnf(x.total)}</span>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <div className="vide-compte">
+              <p>Aucune réservation. Dans votre panier, touchez « Réserver » : la boutique met les articles de côté pour vous.</p>
+              <Link to="/catalogue" className="btn btn-sombre">Voir le catalogue</Link>
+            </div>
+          )
+        ) : res.chargement && !res.donnees ? <p className="ligne-attente" /> : visibles.length ? (
           <ul className="liste-commandes">
             {visibles.map((x) => (
               <li key={x.code}>

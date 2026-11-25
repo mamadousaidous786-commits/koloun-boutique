@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { useBoutique } from '../store';
 import Img from '../components/Img';
 import FeuilleCommande from '../components/FeuilleCommande';
+import FeuilleReservation from '../components/FeuilleReservation';
 import { IcoMoins, IcoPlus, IcoPoubelle, IcoWhatsApp } from '../components/Icones';
 import { gnf, lienWhatsApp } from '../utils';
 
@@ -53,13 +54,15 @@ export default function Panier() {
           <div className="recap-ligne"><span>Sous-total</span><span>{gnf(total)}</span></div>
           <div className="recap-ligne petit"><span>Retrait</span><span>En boutique, Lambanyi</span></div>
           <div className="recap-ligne recap-total"><span>Total</span><strong>{gnf(total)}</strong></div>
-          <button type="button" className="btn btn-sombre btn-large" onClick={() => setFeuille('valider')}>Valider la commande</button>
+          <button type="button" className="btn btn-sombre btn-large" onClick={() => setFeuille('commander')}>Commander</button>
+          <button type="button" className="btn btn-or btn-large" onClick={() => setFeuille('reserver')} disabled={!panier.some((l) => l.source === 'stock')}>Réserver</button>
           <a className="btn btn-contour btn-large" href={lienWhatsApp(`Bonjour Koloun Luxure 👋 J'ai une question sur ces articles :\n${panier.map((l) => `• ${l.nom}${l.taille ? ` (T.${l.taille})` : ''} × ${l.quantite}`).join('\n')}`)} target="_blank" rel="noreferrer"><IcoWhatsApp /> Discuter</a>
-          <p className="petit">Rien n'est payé en ligne : vous payez à la livraison ou au retrait, après confirmation de la boutique.</p>
+          <p className="petit">Rien n'est payé en ligne. <strong>Commander</strong> : livraison ou retrait. <strong>Réserver</strong> : la boutique met les articles de côté, vous passez les payer à Lambanyi.</p>
         </aside>
       </div>
 
-      <FeuilleCommande ouverte={!!feuille} onFermer={() => setFeuille(null)} lignes={panier} />
+      <FeuilleCommande ouverte={feuille === 'commander'} onFermer={() => setFeuille(null)} lignes={panier} />
+      <FeuilleReservation ouverte={feuille === 'reserver'} onFermer={() => setFeuille(null)} lignes={panier} />
     </div>
   );
 }

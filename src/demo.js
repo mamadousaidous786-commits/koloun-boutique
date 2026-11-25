@@ -159,7 +159,7 @@ export async function seConnecter(identifiant) {
 }
 export async function sInscrire(c) { await pause(300); return { type: 'client', token: 'demo-client', compte: { id: 1, nom: c.nom, telephone: /@/.test(c.contact) ? null : c.contact, email: /@/.test(c.contact) ? c.contact : null, google: false } }; }
 export async function connexionGoogle() { await pause(200); throw new Error('Connexion Google indisponible en démonstration.'); }
-export async function monCompte() { await pause(200); const c = lire('kb_compte', null)?.compte; return { compte: c, commandes: commandes().map((x) => ({ reference: x.reference, code: x.code, statut: x.statut, total: x.total_final, total_initial: x.total_initial, date: x.created_at, nb: x.lignes.length, image: x.lignes[0]?.image })) }; }
+export async function monCompte() { await pause(200); const c = lire('kb_compte', null)?.compte; return { compte: c, reservations: lire('kb_demo_resas', []), commandes: commandes().map((x) => ({ reference: x.reference, code: x.code, statut: x.statut, total: x.total_final, total_initial: x.total_initial, date: x.created_at, nb: x.lignes.length, image: x.lignes[0]?.image })) }; }
 export async function modifierCompte(corps) { await pause(200); return { compte: { ...lire('kb_compte', null)?.compte, nom: corps.nom } }; }
 export async function clientsInscrits() { await pause(200); return [{ id: 1, nom: 'Mariama Bah', telephone: '224621112233', email: null, actif: true, google: false, avec_mdp: true, created_at: new Date().toISOString(), derniere_connexion: new Date().toISOString(), nb_commandes: 2, total_confirme: 930000 }, { id: 2, nom: 'Ibrahima Sow', telephone: null, email: 'ibra@mail.com', actif: true, google: true, avec_mdp: false, created_at: new Date().toISOString(), derniere_connexion: null, nb_commandes: 0, total_confirme: 0 }]; }
 export async function commandesDuClient() { await pause(200); return []; }
@@ -168,3 +168,21 @@ export async function reinitialiserClient() { await pause(200); return { mot_de_
 export async function annulerCommande(code) { await pause(200); const l = commandes(); const c = l.find((x) => x.code === code); c.statut = 'annulee'; c.motif = 'Annulée par le client'; ecrire('kb_demo_commandes', l); return c; }
 export async function accepterCommande(id) { await pause(200); const l = commandes(); const c = l.find((x) => x.id === Number(id)); c.statut = 'validee'; ecrire('kb_demo_commandes', l); return c; }
 export async function refuserCommande(id, motif) { await pause(200); const l = commandes(); const c = l.find((x) => x.id === Number(id)); c.statut = 'annulee'; c.motif = motif; ecrire('kb_demo_commandes', l); return c; }
+
+// Réservations (démo)
+export async function reserver(corps) {
+  await pause(300);
+  const compte = lire('kb_compte', null);
+  if (!compte?.compte?.telephone && !(corps.telephone || '').replace(/\D/g, '')) throw new Error('Indiquez votre numéro de téléphone.');
+  const l = lire('kb_demo_resas', []);
+  const d = new Date();
+  const numero = `RES-${d.getFullYear()}${String(d.getMonth() + 1).padStart(2, '0')}${String(d.getDate()).padStart(2, '0')}-${String(l.length + 1).padStart(3, '0')}`;
+  const articles = (corps.articles || []).map((a) => ({ nom: a.nom, taille: a.taille, quantite: a.quantite, prix: a.prix }));
+  const total = articles.reduce((s, a) => s + a.prix * a.quantite, 0);
+  l.unshift({ numero, statut: 'a_confirmer', total, date: d.toISOString(), date_retrait_prevue: corps.date_retrait_prevue || null, nb: articles.reduce((s, a) => s + a.quantite, 0), image: corps.image || null, articles });
+  ecrire('kb_demo_resas', l);
+  let maj;
+  if (!compte?.compte?.telephone && corps.telephone) maj = { ...compte.compte, telephone: `224${corps.telephone.replace(/\D/g, '').slice(-9)}` };
+  return { numero, total, compte: maj };
+}
+export async function annulerReservation(numero) { await pause(200); const l = lire('kb_demo_resas', []); const r = l.find((x) => x.numero === numero); if (r) { r.statut = 'annulee'; r.motif = 'Annulée par le client'; } ecrire('kb_demo_resas', l); return { ok: true }; }
