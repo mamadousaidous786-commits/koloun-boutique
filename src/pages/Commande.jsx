@@ -1,12 +1,12 @@
 import { useEffect, useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useNavigate, useParams } from 'react-router-dom';
 import { api } from '../api';
 import useCharger from '../useCharger';
 import { useBoutique } from '../store';
 import Img from '../components/Img';
 import { Erreur } from './Accueil';
-import { IcoWhatsApp } from '../components/Icones';
-import { STATUTS, gnf, libelleStatut, lienCommande, lienWhatsApp, messageDiscuter, numeroInternational } from '../utils';
+import { IcoBulle, IcoWhatsApp } from '../components/Icones';
+import { STATUTS, gnf, libelleStatut, lienCommande, lienWhatsApp, numeroInternational, ouvrirDiscussion } from '../utils';
 
 const prixLigne = (l) => l.prix_negocie ?? l.prix_unitaire;
 
@@ -86,6 +86,7 @@ function PanneauVendeur({ commande, onMaj }) {
 }
 
 export default function Commande() {
+  const naviguer = useNavigate();
   const { code } = useParams();
   const { vendeur, compte, notifier } = useBoutique();
   const res = useCharger(() => (vendeur ? api.commandeAdminParCode(code).catch(() => api.voirCommande(code)) : api.voirCommande(code)), [code, vendeur?.token]);
@@ -163,7 +164,7 @@ export default function Commande() {
         {c.remise > 0 && <div className="recap-ligne reduction"><span>Réduction</span><span>− {gnf(c.remise)}</span></div>}
         {!retrait && <div className="recap-ligne"><span>Frais de livraison</span><span>{enAttente ? 'à confirmer' : gnf(c.frais_livraison)}</span></div>}
         <div className="recap-ligne recap-total"><span>{c.statut === 'livree' ? 'Total payé' : 'Total à payer'}</span><strong>{gnf(c.a_payer ?? c.total_final)}</strong></div>
-        <a className="btn btn-contour btn-large" href={lienWhatsApp(messageDiscuter(c))} target="_blank" rel="noreferrer"><IcoWhatsApp /> Discuter</a>
+        <button type="button" className="btn btn-contour btn-large" onClick={() => ouvrirDiscussion(naviguer, { prerempli: `Au sujet de ma commande ${c.reference} : ` })}><IcoBulle /> Discuter</button>
         {enAttente && compte && !vendeur && (
           <button type="button" className="btn btn-contour btn-large btn-annuler" onClick={annuler} disabled={annulation}>{annulation ? 'Annulation…' : 'Annuler la commande'}</button>
         )}

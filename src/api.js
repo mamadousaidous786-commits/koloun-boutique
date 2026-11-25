@@ -64,6 +64,11 @@ export const api = {
   annulerCommande: appel('annulerCommande', (code) => requete(`/boutique/compte/commandes/${code}/annuler`, { methode: 'POST', token: jetonClient(), client: true })),
   accepterCommande: appel('accepterCommande', (id, corps) => requete(`/boutique/admin/commandes/${id}/accepter`, { methode: 'POST', corps, token: jeton() })),
   refuserCommande: appel('refuserCommande', (id, motif) => requete(`/boutique/admin/commandes/${id}/refuser`, { methode: 'POST', corps: { motif }, token: jeton() })),
+  chat: appel('chat', (apres = 0) => requete(`/boutique/chat${apres ? `?apres=${apres}` : ''}`, { token: jetonClient(), client: true })),
+  chatNonLus: appel('chatNonLus', () => requete('/boutique/chat/non-lus', { token: jetonClient(), client: true })),
+  envoyerChat: appel('envoyerChat', (corps) => requete('/boutique/chat', corps instanceof FormData
+    ? { methode: 'POST', formulaire: corps, token: jetonClient(), client: true }
+    : { methode: 'POST', corps, token: jetonClient(), client: true })),
   mesAlertes: appel('mesAlertes', () => requete('/boutique/compte/alertes', { token: jetonClient(), client: true })),
   creerAlerte: appel('creerAlerte', (produit_taille_id) => requete('/boutique/compte/alertes', { methode: 'POST', corps: { produit_taille_id }, token: jetonClient(), client: true })),
   supprimerAlerte: appel('supprimerAlerte', (id) => requete(`/boutique/compte/alertes/${id}`, { methode: 'DELETE', token: jetonClient(), client: true })),

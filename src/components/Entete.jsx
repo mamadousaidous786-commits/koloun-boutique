@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
 import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { useBoutique } from '../store';
-import { IcoCoeur, IcoCompte, IcoPanier, IcoRecherche } from './Icones';
+import { api } from '../api';
+import { IcoBulle, IcoCoeur, IcoCompte, IcoPanier, IcoRecherche } from './Icones';
 
 export default function Entete() {
   const { nbArticles, favoris, compte, vendeur } = useBoutique();
@@ -10,6 +11,19 @@ export default function Entete() {
   const [defile, setDefile] = useState(false);
   const [q, setQ] = useState('');
   const surAffiche = pathname === '/';
+  const [nonLus, setNonLus] = useState(0);
+
+  // Messages non lus de la boutique (pastille sur l'icône de discussion)
+  useEffect(() => {
+    if (!compte) { setNonLus(0); return undefined; }
+    const lire = () => { if (document.visibilityState === 'visible') api.chatNonLus().then((r) => setNonLus(r.n)).catch(() => {}); };
+    const lu = () => setNonLus(0);
+    lire();
+    const minuteur = setInterval(lire, 30000);
+    window.addEventListener('kb-chat-lu', lu);
+    document.addEventListener('visibilitychange', lire);
+    return () => { clearInterval(minuteur); window.removeEventListener('kb-chat-lu', lu); document.removeEventListener('visibilitychange', lire); };
+  }, [compte?.token]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     const f = () => setDefile(window.scrollY > 40);
@@ -45,6 +59,12 @@ export default function Entete() {
 
         <div className="entete-actions">
           <Link to="/catalogue?chercher=1" className="btn-ico mobile-seul" aria-label="Chercher"><IcoRecherche /></Link>
+          {!vendeur && (
+            <Link to="/messages" className="btn-ico" aria-label={nonLus ? `Messages (${nonLus} non lus)` : 'Discuter avec la boutique'}>
+              <IcoBulle />
+              {nonLus > 0 && pathname !== '/messages' && <span className="pastille pastille-message">{nonLus}</span>}
+            </Link>
+          )}
           <Link to={vendeur ? '/vendeur' : '/compte'} className="btn-ico" aria-label={vendeur ? 'Espace vendeur' : compte ? 'Mon compte' : 'Connexion ou inscription'}>
             <IcoCompte />
             {(compte || vendeur) && <span className="point-connecte" aria-hidden="true" />}

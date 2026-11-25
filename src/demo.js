@@ -191,3 +191,15 @@ export async function annulerReservation(numero) { await pause(200); const l = l
 export async function mesAlertes() { await pause(150); return lire('kb_demo_alertes', []); }
 export async function creerAlerte(id) { await pause(200); const l = lire('kb_demo_alertes', []).filter((a) => a.produit_taille_id !== id); l.unshift({ produit_taille_id: id, statut: 'attente', nom: 'Article', taille: '', date: new Date().toISOString() }); ecrire('kb_demo_alertes', l); return { message: 'Vous serez prévenu dès que la taille revient.' }; }
 export async function supprimerAlerte(id) { await pause(150); ecrire('kb_demo_alertes', lire('kb_demo_alertes', []).filter((a) => a.produit_taille_id !== id)); return { ok: true }; }
+
+// Discussion (démo)
+export async function chat(apres = 0) { await pause(150); return { messages: lire('kb_demo_chat', []).filter((m) => m.id > apres) }; }
+export async function chatNonLus() { return { n: 0 }; }
+export async function envoyerChat(corps) {
+  await pause(200);
+  const l = lire('kb_demo_chat', []); const id = (l.at(-1)?.id || 0) + 1;
+  const m = corps instanceof FormData ? { type: 'texte', texte: '📷 (photo en démo)' } : corps.produit_id ? { type: 'produit', donnees: { produit_id: corps.produit_id, nom: 'Article', prix: 0 } } : corps.panier ? { type: 'panier', donnees: { lignes: [], total: 0 } } : { type: 'texte', texte: corps.texte };
+  l.push({ id, auteur: 'client', created_at: new Date().toISOString(), ...m });
+  if (l.length === 1) l.push({ id: id + 1, auteur: 'vendeur', type: 'texte', texte: 'Bonjour 👋 Bienvenue chez Koloun Luxure ! (démonstration)', created_at: new Date().toISOString() });
+  ecrire('kb_demo_chat', l); return { id };
+}

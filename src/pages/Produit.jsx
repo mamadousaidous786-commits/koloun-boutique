@@ -8,8 +8,8 @@ import CarteProduit from '../components/CarteProduit';
 import FeuilleCommande from '../components/FeuilleCommande';
 import AlerteTaille from '../components/AlerteTaille';
 import { Erreur } from './Accueil';
-import { IcoCoeur, IcoMoins, IcoPartager, IcoPlus, IcoRetour, IcoWhatsApp } from '../components/Icones';
-import { gnf, lienWhatsApp } from '../utils';
+import { IcoBulle, IcoCoeur, IcoMoins, IcoPartager, IcoPlus, IcoRetour } from '../components/Icones';
+import { gnf, ouvrirDiscussion } from '../utils';
 import { urlSite } from '../config';
 
 export default function Produit() {
@@ -64,7 +64,7 @@ export default function Produit() {
     if (navigator.share) {
       try { await navigator.share({ title: p.nom, text: texte, url }); } catch { /* partage annulé */ }
     } else {
-      window.open(lienWhatsApp(`${texte}\n${url}`, ''), '_blank');
+      try { await navigator.clipboard.writeText(`${texte}\n${url}`); notifier('Lien copié : collez-le pour le partager'); } catch { /* ignoré */ }
     }
   };
 
@@ -125,6 +125,7 @@ export default function Produit() {
             <button type="button" className="btn btn-sombre btn-large" onClick={auPanier} disabled={stockVariante === 0}>Ajouter au panier</button>
             <button type="button" className="btn btn-or btn-large" onClick={() => exigerTaille() && setFeuille(true)} disabled={stockVariante === 0}>Commander maintenant</button>
             <div className="fiche-secondaires">
+              <button type="button" className="btn btn-contour btn-discuter" onClick={() => ouvrirDiscussion(naviguer, { produit_id: p.id, produit_taille_id: taille?.id })}><IcoBulle /> Discuter</button>
               <button type="button" className={`btn-rond clair ${fav ? 'actif' : ''}`} onClick={() => basculerFavori(p.id)} aria-pressed={fav} aria-label={fav ? 'Retirer des favoris' : 'Ajouter aux favoris'}><IcoCoeur plein={fav} /></button>
               <button type="button" className="btn-rond clair" onClick={partager} aria-label="Partager"><IcoPartager /></button>
             </div>

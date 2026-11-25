@@ -6,8 +6,8 @@ import Vue3D from '../components/Vue3D';
 import Img from '../components/Img';
 import { Erreur } from './Accueil';
 import { avance } from './Speciales';
-import { IcoMoins, IcoPartager, IcoPlus, IcoRetour, IcoWhatsApp } from '../components/Icones';
-import { gnf, lienWhatsApp } from '../utils';
+import { IcoBulle, IcoMoins, IcoPartager, IcoPlus, IcoRetour } from '../components/Icones';
+import { gnf, ouvrirDiscussion } from '../utils';
 import { urlSite } from '../config';
 
 // Fiche d'un modèle en commande spéciale : photos, pointure, puis validation sur WhatsApp avec l'avance de 50 %
@@ -58,7 +58,7 @@ export default function SpecialeDetail() {
       '',
       `Voir le modèle : ${lien}`,
     ].filter((l) => l !== null).join('\n');
-    window.location.href = lienWhatsApp(texte);
+    ouvrirDiscussion(naviguer, { texte }); // part tout seul dans la discussion avec la boutique
   };
 
   const partager = async () => {
@@ -66,7 +66,7 @@ export default function SpecialeDetail() {
     if (navigator.share) {
       try { await navigator.share({ title: s.nom, text: texte, url: lien }); } catch { /* partage annulé */ }
     } else {
-      window.open(lienWhatsApp(`${texte}\n${lien}`, ''), '_blank');
+      try { await navigator.clipboard.writeText(`${texte}\n${lien}`); } catch { /* ignoré */ }
     }
   };
 
@@ -108,12 +108,12 @@ export default function SpecialeDetail() {
           </div>
 
           <div className="fiche-actions fiche-actions-speciale">
-            <button type="button" className="btn btn-wa btn-large" onClick={valider}>
-              <IcoWhatsApp /> Valider votre commande sur WhatsApp
+            <button type="button" className="btn btn-sombre btn-large" onClick={valider}>
+              <IcoBulle /> Valider votre commande
             </button>
             <button type="button" className="btn-rond clair" onClick={partager} aria-label="Partager"><IcoPartager /></button>
           </div>
-          <p className="petit">Vous discutez avec la boutique sur WhatsApp pour verser l'avance. La commande est lancée dès réception de l'avance.</p>
+          <p className="petit">Votre demande part dans la discussion avec la boutique, qui vous explique comment verser l'avance. La commande est lancée dès réception de l'avance.</p>
 
           {s.description && (
             <div className="bloc description">

@@ -1,16 +1,17 @@
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { api } from '../api';
 import useCharger from '../useCharger';
 import Img from '../components/Img';
 import { Erreur, GrilleSquelette } from './Accueil';
-import { IcoWhatsApp } from '../components/Icones';
-import { gnf, lienWhatsApp } from '../utils';
+import { IcoBulle } from '../components/Icones';
+import { gnf, ouvrirDiscussion } from '../utils';
 
 export const avance = (prix) => Math.round(prix / 2);
 
 // Liste des modèles en commande spéciale : on touche un modèle pour voir ses photos et choisir sa pointure
 export default function Speciales() {
   const liste = useCharger(() => api.speciales(), []);
+  const naviguer = useNavigate();
 
   return (
     <div className="page page-speciale">
@@ -41,9 +42,9 @@ export default function Speciales() {
 
       <div className="encart-photo">
         <p>Le modèle que vous voulez n'est pas dans la liste ?</p>
-        <a className="btn btn-contour" href={lienWhatsApp("Bonjour Koloun Luxure 👋 Je cherche un modèle précis pour une commande spéciale. Je vous envoie la photo :")} target="_blank" rel="noreferrer">
-          <IcoWhatsApp /> Envoyer une photo du modèle
-        </a>
+        <button type="button" className="btn btn-contour" onClick={() => ouvrirDiscussion(naviguer, { prerempli: 'Bonjour, je cherche ce modèle en commande spéciale (photo ci-dessous) :' })}>
+          <IcoBulle /> Envoyer une photo du modèle
+        </button>
       </div>
     </div>
   );

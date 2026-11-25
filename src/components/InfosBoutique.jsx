@@ -1,6 +1,6 @@
+import { Link } from 'react-router-dom';
 import { BOUTIQUE, WHATSAPP } from '../config';
-import { lienWhatsApp } from '../utils';
-import { IcoPosition, IcoTel, IcoWhatsApp } from './Icones';
+import { IcoBulle, IcoPosition, IcoTel } from './Icones';
 
 // Adresse, contacts et plan d'accès
 export default function InfosBoutique({ complet = false }) {
@@ -14,7 +14,7 @@ export default function InfosBoutique({ complet = false }) {
         <p className="infos-sous">Essayez les articles sur place ou commandez ici et récupérez-les en boutique.</p>
         <div className="infos-actions">
           <a className="btn btn-or" href={maps || recherche} target="_blank" rel="noreferrer"><IcoPosition width="18" height="18" /> Itinéraire</a>
-          <a className="btn btn-wa" href={lienWhatsApp('Bonjour Koloun Luxure 👋', WHATSAPP)} target="_blank" rel="noreferrer"><IcoWhatsApp /> WhatsApp</a>
+          <Link className="btn btn-wa" to="/messages"><IcoBulle /> Discuter</Link>
           <a className="btn btn-contour-clair" href={`tel:+${WHATSAPP}`}><IcoTel width="18" height="18" /> {BOUTIQUE.telephone}</a>
         </div>
       </div>

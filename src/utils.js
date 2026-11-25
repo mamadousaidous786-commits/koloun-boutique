@@ -56,3 +56,9 @@ export const libelleStatut = (statut, mode) => {
 
 // « Discuter » : WhatsApp avec la référence et le lien de la commande
 export const messageDiscuter = (c) => `Bonjour Koloun Luxure 👋\nJ'ai une question sur ma commande ${c.reference} :\n\n${lienCommande(c.code)}`;
+
+// Ouvre la discussion avec la boutique ; « envoi » part tout seul (carte produit, panier, texte) ou pré-remplit le message
+export function ouvrirDiscussion(naviguer, envoi = null) {
+  try { if (envoi) sessionStorage.setItem('kb_chat_envoi', JSON.stringify(envoi)); } catch { /* navigation privée */ }
+  naviguer('/messages');
+}
