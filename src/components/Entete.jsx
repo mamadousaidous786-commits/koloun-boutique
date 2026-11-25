@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { useBoutique } from '../store';
 import { api } from '../api';
+import { API, DEMO } from '../config';
 import { IcoBulle, IcoCoeur, IcoCompte, IcoPanier, IcoRecherche } from './Icones';
 
 export default function Entete() {
@@ -19,10 +20,20 @@ export default function Entete() {
     const lire = () => { if (document.visibilityState === 'visible') api.chatNonLus().then((r) => setNonLus(r.n)).catch(() => {}); };
     const lu = () => setNonLus(0);
     lire();
-    const minuteur = setInterval(lire, 30000);
+    const minuteur = setInterval(lire, 60000);
+    // Direct : le serveur signale chaque réponse de la boutique dès qu'elle arrive
+    let flux = null;
+    if (!DEMO && typeof EventSource !== 'undefined') {
+      flux = new EventSource(`${API}/boutique/chat/flux?token=${encodeURIComponent(compte.token)}`);
+      flux.onmessage = (ev) => {
+        let detail = {}; try { detail = JSON.parse(ev.data); } catch { /* ignoré */ }
+        window.dispatchEvent(new CustomEvent('kb-chat-message', { detail }));
+        if (window.location.pathname !== '/messages') lire();
+      };
+    }
     window.addEventListener('kb-chat-lu', lu);
     document.addEventListener('visibilitychange', lire);
-    return () => { clearInterval(minuteur); window.removeEventListener('kb-chat-lu', lu); document.removeEventListener('visibilitychange', lire); };
+    return () => { flux?.close(); clearInterval(minuteur); window.removeEventListener('kb-chat-lu', lu); document.removeEventListener('visibilitychange', lire); };
   }, [compte?.token]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {

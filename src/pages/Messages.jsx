@@ -114,7 +114,7 @@ function Bulle({ m }) {
       <div className={`bulle ${carte ? 'bulle-carte' : ''}`}>
         {!moi && m.auteur === 'agent' && <span className="bulle-auteur">Assistant Koloun</span>}
         {contenu}
-        <span className="bulle-heure">{heure(m.created_at)}</span>
+        <span className="bulle-heure">{m.temporaire ? 'envoi…' : heure(m.created_at)}</span>
       </div>
     </div>
   );
@@ -135,7 +135,12 @@ export default function Messages() {
     const r = await api.chat(tout ? 0 : dernier.current);
     if (!r.messages.length && !tout) return;
     dernier.current = r.messages.at(-1)?.id || dernier.current;
-    setMessages((avant) => (tout || !avant ? r.messages : [...avant, ...r.messages.filter((m) => !avant.some((a) => a.id === m.id))]));
+    setMessages((avant) => {
+      if (tout || !avant) return r.messages;
+      // Le vrai message remplace celui affiché pendant l'envoi
+      const base = r.messages.some((m) => m.auteur === 'client') ? avant.filter((a) => !a.temporaire) : avant;
+      return [...base, ...r.messages.filter((m) => !base.some((a) => a.id === m.id))];
+    });
     // Ouverture : on descend au dernier message, y compris quand les photos finissent de charger
     if (tout) { enBas.current = true; [0, 200, 500, 1000, 1800].forEach((t) => setTimeout(() => window.scrollTo(0, document.documentElement.scrollHeight), t)); }
     window.dispatchEvent(new Event('kb-chat-lu'));
@@ -154,8 +159,13 @@ export default function Messages() {
         await charger(true);
       } catch (e) { setErreur(e.message); setMessages((m) => m || []); }
     })();
-    const minuteur = setInterval(() => { if (!arret && document.visibilityState === 'visible') charger().catch(() => {}); }, 4000);
-    return () => { arret = true; clearInterval(minuteur); };
+    // Direct : la réponse de la boutique est signalée par l'en-tête (connexion ouverte) → on la récupère aussitôt
+    const surMessage = () => { if (!arret) charger().catch(() => {}); };
+    const auRetour = () => { if (!arret && document.visibilityState === 'visible') charger().catch(() => {}); };
+    window.addEventListener('kb-chat-message', surMessage);
+    document.addEventListener('visibilitychange', auRetour);
+    const secours = setInterval(auRetour, 15000); // au cas où la connexion directe serait coupée
+    return () => { arret = true; clearInterval(secours); window.removeEventListener('kb-chat-message', surMessage); document.removeEventListener('visibilitychange', auRetour); };
   }, [compte?.token]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const fil = useRef(null);
@@ -177,21 +187,28 @@ export default function Messages() {
   const envoyer = async (e) => {
     e?.preventDefault();
     const t = texte.trim();
-    if (!t || envoi) return;
-    setEnvoi(true); setErreur('');
-    try { await api.envoyerChat({ texte: t }); setTexte(''); enBas.current = true; await charger(); } catch (err) { setErreur(err.message); }
-    setEnvoi(false);
+    if (!t) return;
+    setErreur('');
+    // Affiché tout de suite, comme sur WhatsApp ; remplacé par le vrai message dès que le serveur l'a
+    const temp = { id: `t${Date.now()}`, temporaire: true, auteur: 'client', type: 'texte', texte: t, created_at: new Date().toISOString() };
+    setMessages((m) => [...(m || []), temp]); setTexte(''); enBas.current = true;
+    try { await api.envoyerChat({ texte: t }); await charger(); } catch (err) {
+      setMessages((m) => (m || []).filter((x) => x.id !== temp.id)); setTexte(t); setErreur(err.message);
+    }
   };
 
   const envoyerPhoto = async (f) => {
     if (!f) return;
     setEnvoi(true); setErreur('');
+    const apercu = URL.createObjectURL(f);
+    const temp = { id: `t${Date.now()}`, temporaire: true, auteur: 'client', type: 'image', texte: texte.trim() || null, donnees: { url: apercu }, created_at: new Date().toISOString() };
+    setMessages((m) => [...(m || []), temp]); enBas.current = true;
     try {
       const fd = new FormData();
       fd.append('image', await reduire(f));
       if (texte.trim()) { fd.append('texte', texte.trim()); setTexte(''); }
-      await api.envoyerChat(fd); enBas.current = true; await charger();
-    } catch (err) { setErreur(err.message); }
+      await api.envoyerChat(fd); await charger();
+    } catch (err) { setMessages((m) => (m || []).filter((x) => x.id !== temp.id)); setErreur(err.message); }
     setEnvoi(false);
     if (fichier.current) fichier.current.value = '';
   };
@@ -236,7 +253,7 @@ export default function Messages() {
           value={texte} onChange={(e) => setTexte(e.target.value)} rows={1} placeholder="Écrire un message…" aria-label="Message"
           onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey && window.matchMedia('(pointer: fine)').matches) envoyer(e); }}
         />
-        <button type="submit" className="btn-envoyer" disabled={envoi || !texte.trim()} aria-label="Envoyer"><IcoEnvoyer width="20" height="20" /></button>
+        <button type="submit" className="btn-envoyer" disabled={!texte.trim()} aria-label="Envoyer"><IcoEnvoyer width="20" height="20" /></button>
       </form>
     </div>
   );
