@@ -751,3 +751,17 @@ main { min-height: 70vh; }
 @media (min-width: 900px) { .chat-saisie { bottom: 0; } }
 @media (max-width: 420px) { .marque-nom { font-size: 19px; white-space: nowrap; } .entete-actions .btn-ico { width: 40px; } }
 .photo-expiree { font-style: italic; opacity: .7; }
+
+/* ---------- Promotions (Black Friday…) ---------- */
+.badge-promo { background: #c8102e; color: #fff; font-weight: 800; }
+.carte-prix.en-promo, .fiche-prix.en-promo { color: #c8102e; display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 8px; }
+.carte-prix s, .fiche-prix s, .affiche-avant { color: var(--doux); font-weight: 400; font-size: .8em; margin-left: 6px; }
+.fiche-prix .badge-promo { font-size: 13px; align-self: center; }
+.fiche-promo { margin: 4px 0 0; color: #c8102e; font-weight: 600; font-size: 14px; }
+.bandeau-promo {
+  display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 4px 12px; width: 100%;
+  padding: 12px 16px; border: 0; background: #111; color: #fff; font: inherit; text-align: center; cursor: pointer;
+}
+.bandeau-promo strong { letter-spacing: .02em; }
+.bandeau-promo-pc { background: #c8102e; color: #fff; font-weight: 900; font-size: 20px; padding: 2px 10px; border-radius: 8px; }
+.bandeau-promo span:last-child { color: #e9d7a8; font-size: 14px; }

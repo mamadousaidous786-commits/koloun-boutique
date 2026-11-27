@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { api } from '../api';
 import useCharger from '../useCharger';
@@ -60,6 +60,7 @@ export default function Accueil() {
         </section>
       )}
 
+      {infos.donnees?.promotion && <BandeauPromo promo={infos.donnees.promotion} onVoir={() => document.getElementById('titre-articles')?.scrollIntoView({ behavior: 'smooth', block: 'start' })} />}
       <div className="page page-accueil">
         <Link to="/commande-speciale" className="bandeau-special">
           <div className="bandeau-visuels" aria-hidden="true">
@@ -109,5 +110,21 @@ export default function Accueil() {
 
       <InfosBoutique />
     </div>
+  );
+}
+
+// Promotion en cours (ex. : Black Friday) : bandeau avec le temps restant
+function BandeauPromo({ promo, onVoir }) {
+  const [maintenant, setMaintenant] = useState(Date.now());
+  useEffect(() => { const t = setInterval(() => setMaintenant(Date.now()), 30000); return () => clearInterval(t); }, []);
+  const reste = new Date(promo.fin) - maintenant;
+  if (reste <= 0) return null;
+  const j = Math.floor(reste / 86400000); const h = Math.floor((reste % 86400000) / 3600000); const m = Math.floor((reste % 3600000) / 60000);
+  return (
+    <button type="button" className="bandeau-promo" onClick={onVoir}>
+      <strong>{promo.nom}</strong>
+      <span className="bandeau-promo-pc">-{promo.pourcentage} %</span>
+      <span>sur les articles en stock · encore {j > 0 ? `${j} j ${h} h` : `${h} h ${String(m).padStart(2, '0')}`}</span>
+    </button>
   );
 }

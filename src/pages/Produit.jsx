@@ -78,7 +78,8 @@ export default function Produit() {
         <div className="fiche-infos">
           {p.categorie && <p className="fiche-cat">{p.categorie}</p>}
           <h1 className="fiche-titre">{p.nom}</h1>
-          <p className="fiche-prix">{gnf(p.prix)}</p>
+          <p className={`fiche-prix ${p.promo ? 'en-promo' : ''}`}>{gnf(p.prix)}{p.prix_avant && <><s>{gnf(p.prix_avant)}</s><span className="badge badge-promo">-{p.promo.pourcentage} %</span></>}</p>
+          {p.promo && <p className="fiche-promo">{p.promo.nom} · jusqu'au {new Date(p.promo.fin).toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' })} à {new Date(p.promo.fin).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}</p>}
 
           {p.variantes.length > 1 && (
             <div className="bloc">

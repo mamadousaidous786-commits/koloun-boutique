@@ -95,7 +95,7 @@ export default function Affiche({ produits }) {
             <span>{depuis(p.date_ajout)}</span>
           </p>
           <h1 className="affiche-titre">{p.nom}</h1>
-          <p className="affiche-prix">{gnf(p.prix)}</p>
+          <p className="affiche-prix">{gnf(p.prix)}{p.prix_avant && <s className="affiche-avant">{gnf(p.prix_avant)}</s>}</p>
           {tailles.length > 0 ? (
             <p className="affiche-tailles">
               {tailles.slice(0, 7).map((t) => <span key={t}>{t}</span>)}
